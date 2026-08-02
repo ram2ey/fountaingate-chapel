@@ -17,6 +17,7 @@ export const Header: React.FC = () => {
     { label: 'Dashboard Overview', href: '/', roles: ['admin', 'pastor'] },
     { label: 'Member Directory', href: '/members', roles: ['admin', 'pastor'] },
     { label: 'Pastoral Care & At-Risk', href: '/pastoral-care', badge: atRiskCount > 0 ? atRiskCount : undefined, roles: ['admin', 'pastor'] },
+    { label: 'Prayer Wall & Testimonies', href: '/prayer-wall', roles: ['admin', 'pastor', 'member'] },
     { label: 'Sermon & Media Hub', href: '/sermons', roles: ['admin', 'pastor', 'member'] },
     { label: 'WhatsApp & SMS Broadcast', href: '/communications', roles: ['admin', 'pastor'] },
     { label: 'Financials & Tithe Ledger', href: '/financials', roles: ['admin'] },

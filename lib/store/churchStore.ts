@@ -6,7 +6,8 @@ import {
   Broadcast,
   GuestRetentionItem,
   SystemUser,
-  AuditLog
+  AuditLog,
+  PrayerRequest
 } from '../types/church';
 
 export const INITIAL_SYSTEM_USERS: SystemUser[] = [
@@ -215,5 +216,60 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
     action: 'UPDATE_ROLE',
     details: 'Promoted Pastor Kwame Boateng to Pastor role',
     created_at: '2026-08-01 09:15:20'
+  }
+];
+
+export const INITIAL_PRAYER_REQUESTS: PrayerRequest[] = [
+  {
+    id: 'pr1',
+    requester_name: 'Sister Grace Mensah',
+    requester_phone: '+233501987654',
+    title: 'Divine Healing & Strength for Mother',
+    details: 'Standing in faith for total restoration of my mother’s health following medical diagnosis in Accra. Believing God for supernatural healing!',
+    category: 'Healing & Health',
+    is_anonymous: false,
+    is_confidential_to_pastors: false,
+    status: 'active',
+    prayed_count: 48,
+    created_at: '2026-07-28'
+  },
+  {
+    id: 'pr2',
+    requester_name: 'Anonymous Brother',
+    requester_phone: '+233244123456',
+    title: 'Financial Breakthrough & Business Contract',
+    details: 'Praying for God’s favor upon my pending contract bid in Bolgatanga. Trusting God for kingdom prosperity to support church building project.',
+    category: 'Financial Breakthrough',
+    is_anonymous: true,
+    is_confidential_to_pastors: false,
+    status: 'active',
+    prayed_count: 32,
+    created_at: '2026-07-29'
+  },
+  {
+    id: 'pr3',
+    requester_name: 'Deacon Samuel Adjei',
+    requester_phone: '+233244123456',
+    title: 'Praise Testimony! God Granted My Family Permanent Visa',
+    details: 'Glory to God in the highest! The Lord has answered our prayers and granted my entire family our visa approval. Thank you FGC family for interceding!',
+    category: 'General Intercession',
+    is_anonymous: false,
+    is_confidential_to_pastors: false,
+    status: 'answered_testimony',
+    prayed_count: 85,
+    created_at: '2026-07-25'
+  },
+  {
+    id: 'pr4',
+    requester_name: 'Confidential Member',
+    requester_phone: '+233277334455',
+    title: 'Pastoral Guidance for Family Restoration',
+    details: 'Seeking urgent pastoral prayer and counsel regarding marital peace and family unity.',
+    category: 'Family & Marriage',
+    is_anonymous: false,
+    is_confidential_to_pastors: true,
+    status: 'under_pastoral_care',
+    prayed_count: 12,
+    created_at: '2026-07-30'
   }
 ];

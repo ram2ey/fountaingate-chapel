@@ -11,7 +11,9 @@ import {
   Broadcast,
   GuestRetentionItem,
   SystemUser,
-  AuditLog
+  AuditLog,
+  PrayerRequest,
+  PrayerStatus
 } from '../types/church';
 
 import { 
@@ -22,7 +24,8 @@ import {
   INITIAL_CARE_NOTES, 
   INITIAL_BROADCASTS,
   INITIAL_GUEST_RETENTION,
-  INITIAL_AUDIT_LOGS
+  INITIAL_AUDIT_LOGS,
+  INITIAL_PRAYER_REQUESTS
 } from '../store/churchStore';
 
 interface ChurchContextType {
@@ -52,6 +55,11 @@ interface ChurchContextType {
   recordAttendance: (memberIds: string[], eventType: 'Sunday Service' | 'Mid-week Cell' | 'Night Vigil') => void;
   auditLogs: AuditLog[];
   addAuditLog: (action: string, details: string) => void;
+  prayerRequests: PrayerRequest[];
+  addPrayerRequest: (request: Omit<PrayerRequest, 'id' | 'status' | 'prayed_count' | 'created_at'>) => void;
+  incrementPrayerCount: (id: string) => void;
+  updatePrayerStatus: (id: string, status: PrayerStatus) => void;
+  deletePrayerRequest: (id: string) => void;
   pendingOfflineCount: number;
   syncOfflineCheckIns: () => void;
   isOnline: boolean;
@@ -75,6 +83,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>(INITIAL_BROADCASTS);
   const [guestRetention, setGuestRetention] = useState<GuestRetentionItem[]>(INITIAL_GUEST_RETENTION);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
+  const [prayerRequests, setPrayerRequests] = useState<PrayerRequest[]>(INITIAL_PRAYER_REQUESTS);
 
   const [isOnline, setIsOnline] = useState(true);
   const [pendingOfflineCount, setPendingOfflineCount] = useState(0);
@@ -300,6 +309,32 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setGuestRetention(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
   };
 
+  const addPrayerRequest = (newRequest: Omit<PrayerRequest, 'id' | 'status' | 'prayed_count' | 'created_at'>) => {
+    const request: PrayerRequest = {
+      ...newRequest,
+      id: `pr-${Date.now()}`,
+      status: 'active',
+      prayed_count: 1,
+      created_at: new Date().toISOString().split('T')[0]
+    };
+    setPrayerRequests(prev => [request, ...prev]);
+    addAuditLog('SUBMIT_PRAYER', `Submitted prayer request "${request.title}"`);
+  };
+
+  const incrementPrayerCount = (id: string) => {
+    setPrayerRequests(prev => prev.map(p => p.id === id ? { ...p, prayed_count: p.prayed_count + 1 } : p));
+  };
+
+  const updatePrayerStatus = (id: string, status: PrayerStatus) => {
+    setPrayerRequests(prev => prev.map(p => p.id === id ? { ...p, status } : p));
+    addAuditLog('UPDATE_PRAYER_STATUS', `Updated prayer status to ${status}`);
+  };
+
+  const deletePrayerRequest = (id: string) => {
+    setPrayerRequests(prev => prev.filter(p => p.id !== id));
+    addAuditLog('DELETE_PRAYER', `Deleted prayer request`);
+  };
+
   return (
     <ChurchContext.Provider value={{
       currentUser,
@@ -328,6 +363,11 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       recordAttendance,
       auditLogs,
       addAuditLog,
+      prayerRequests,
+      addPrayerRequest,
+      incrementPrayerCount,
+      updatePrayerStatus,
+      deletePrayerRequest,
       pendingOfflineCount,
       syncOfflineCheckIns,
       isOnline,

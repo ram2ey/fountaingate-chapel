@@ -124,3 +124,30 @@ export interface AuditLog {
   details: string;
   created_at: string;
 }
+
+export type PrayerCategory = 
+  | 'Healing & Health'
+  | 'Financial Breakthrough'
+  | 'Family & Marriage'
+  | 'Salvation & Spiritual Growth'
+  | 'Career & Business'
+  | 'General Intercession';
+
+export type PrayerStatus = 
+  | 'active'
+  | 'under_pastoral_care'
+  | 'answered_testimony';
+
+export interface PrayerRequest {
+  id: string;
+  requester_name: string;
+  requester_phone: string;
+  title: string;
+  details: string;
+  category: PrayerCategory;
+  is_anonymous: boolean;
+  is_confidential_to_pastors: boolean;
+  status: PrayerStatus;
+  prayed_count: number;
+  created_at: string;
+}
