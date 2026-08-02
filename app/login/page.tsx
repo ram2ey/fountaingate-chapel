@@ -27,12 +27,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemoAccount = (demoPhone: string) => {
-    setPhone(demoPhone);
-    setPassword('password123');
-    setErrorMsg('');
-  };
-
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8 space-y-6">
@@ -41,10 +35,10 @@ export default function LoginPage() {
             FGC
           </div>
           <h2 className="font-display font-extrabold text-2xl text-slate-900">
-            Sign In to FGC CMS
+            Sign In
           </h2>
           <p className="text-xs text-slate-500">
-            Fountain Gate Chapel Management Ecosystem
+            Fountain Gate Chapel
           </p>
         </div>
 
@@ -64,14 +58,14 @@ export default function LoginPage() {
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+233 24 400 0111 or 0244000111"
+              placeholder="e.g. +233 24 400 0111"
               className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-900 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white"
             />
           </div>
 
           <div>
             <label className="block text-slate-700 font-bold mb-1.5">
-              Account Password *
+              Password *
             </label>
             <input
               type="password"
@@ -87,34 +81,9 @@ export default function LoginPage() {
             type="submit"
             className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-md transition"
           >
-            Sign In with Phone Number
+            Sign In
           </button>
         </form>
-
-        {/* 1-Click Quick Fill Demo Accounts */}
-        <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-950 text-xs space-y-2.5">
-          <p className="font-bold text-amber-900 text-xs">⚡ Quick 1-Click Sign In Accounts:</p>
-          <div className="grid grid-cols-3 gap-2 text-[11px]">
-            <button
-              onClick={() => fillDemoAccount('+233244000111')}
-              className="p-2 rounded-xl bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 font-bold shadow-xs text-center"
-            >
-              Admin
-            </button>
-            <button
-              onClick={() => fillDemoAccount('+233501987654')}
-              className="p-2 rounded-xl bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 font-bold shadow-xs text-center"
-            >
-              Pastor
-            </button>
-            <button
-              onClick={() => fillDemoAccount('+233277334455')}
-              className="p-2 rounded-xl bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 font-bold shadow-xs text-center"
-            >
-              Member
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
