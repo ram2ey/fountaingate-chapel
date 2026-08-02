@@ -6,7 +6,7 @@ import { useChurch } from '../../lib/context/ChurchContext';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { loginWithPhone, t } = useChurch();
+  const { loginWithPhone } = useChurch();
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -27,6 +27,12 @@ export default function LoginPage() {
     }
   };
 
+  const fillDemoAccount = (demoPhone: string) => {
+    setPhone(demoPhone);
+    setPassword('password123');
+    setErrorMsg('');
+  };
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8 space-y-6">
@@ -38,7 +44,7 @@ export default function LoginPage() {
             Sign In to FGC CMS
           </h2>
           <p className="text-xs text-slate-500">
-            Mobile-first Church Management Ecosystem
+            Fountain Gate Chapel Management Ecosystem
           </p>
         </div>
 
@@ -85,10 +91,29 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] space-y-1">
-          <p className="font-bold">Demo Login Credentials:</p>
-          <p>• Admin: <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">+233244000111</code> / any password</p>
-          <p>• Pastor: <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">+233501987654</code> / any password</p>
+        {/* 1-Click Quick Fill Demo Accounts */}
+        <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-950 text-xs space-y-2.5">
+          <p className="font-bold text-amber-900 text-xs">⚡ Quick 1-Click Sign In Accounts:</p>
+          <div className="grid grid-cols-3 gap-2 text-[11px]">
+            <button
+              onClick={() => fillDemoAccount('+233244000111')}
+              className="p-2 rounded-xl bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 font-bold shadow-xs text-center"
+            >
+              Admin
+            </button>
+            <button
+              onClick={() => fillDemoAccount('+233501987654')}
+              className="p-2 rounded-xl bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 font-bold shadow-xs text-center"
+            >
+              Pastor
+            </button>
+            <button
+              onClick={() => fillDemoAccount('+233277334455')}
+              className="p-2 rounded-xl bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 font-bold shadow-xs text-center"
+            >
+              Member
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -70,8 +70,8 @@ const ChurchContext = createContext<ChurchContextType | undefined>(undefined);
 
 export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [systemUsers, setSystemUsers] = useState<SystemUser[]>(INITIAL_SYSTEM_USERS);
-  const [currentUser, setCurrentUser] = useState<SystemUser | null>(INITIAL_SYSTEM_USERS[0]);
-  const [currentRole, setCurrentRole] = useState<UserRole>('admin');
+  const [currentUser, setCurrentUser] = useState<SystemUser | null>(null);
+  const [currentRole, setCurrentRole] = useState<UserRole>('member');
 
   const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
   const [sermons, setSermons] = useState<Sermon[]>(INITIAL_SERMONS);
@@ -125,14 +125,17 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const loginWithPhone = (phone: string, pass: string): boolean => {
-    const user = systemUsers.find(u => u.phone.replace(/[^0-9]/g, '') === phone.replace(/[^0-9]/g, ''));
+    const cleanInput = phone.replace(/[^0-9]/g, '');
+    const user = systemUsers.find(u => u.phone.replace(/[^0-9]/g, '') === cleanInput);
+    
     if (user) {
       setCurrentUser(user);
       setCurrentRole(user.role);
-      addAuditLog('LOGIN', `User logged in with phone ${phone}`);
+      addAuditLog('LOGIN', `User ${user.full_name} signed in with phone ${phone}`);
       return true;
     }
-    // Fallback demo user
+
+    // Default member sign in
     const newUser: SystemUser = {
       id: `u-${Date.now()}`,
       phone,
@@ -142,12 +145,14 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
     setCurrentUser(newUser);
     setCurrentRole('member');
-    addAuditLog('LOGIN', `Guest user logged in with phone ${phone}`);
+    addAuditLog('LOGIN', `Member logged in with phone ${phone}`);
     return true;
   };
 
   const logout = () => {
-    addAuditLog('LOGOUT', `User ${currentUser?.full_name} logged out`);
+    if (currentUser) {
+      addAuditLog('LOGOUT', `User ${currentUser.full_name} logged out`);
+    }
     setCurrentUser(null);
     setCurrentRole('member');
   };
