@@ -47,19 +47,13 @@ export default function OnlineGivingPage() {
 
   return (
     <div className="space-y-6 pb-8 max-w-4xl mx-auto">
-      {/* High-Contrast Welcome & Scripture Banner */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-emerald-200 bg-emerald-50/80 shadow-md space-y-3 relative overflow-hidden">
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-xs">
-            Kingdom Stewardship
-          </span>
-        </div>
-
+      {/* High-Contrast Welcome & Scripture Banner (No Pill Tag) */}
+      <div className="glass-panel p-6 sm:p-8 rounded-none border border-emerald-200 bg-emerald-50/80 shadow-md space-y-3 relative overflow-hidden">
         <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
           Online Giving & Tithe Portal
         </h1>
 
-        <div className="p-4 rounded-2xl bg-white border border-emerald-100 shadow-xs space-y-1">
+        <div className="p-4 rounded-none bg-white border border-emerald-100 shadow-xs space-y-1">
           <p className="text-xs sm:text-sm font-semibold text-slate-800 italic leading-relaxed">
             "Honor the LORD with your wealth, with the firstfruits of all your crops; then your barns will be filled to overflowing, and your vats will brim over with new wine."
           </p>
@@ -70,9 +64,9 @@ export default function OnlineGivingPage() {
       </div>
 
       {successReceipt && (
-        <div className="glass-panel p-6 rounded-3xl border border-emerald-300 bg-emerald-50 text-emerald-950 shadow-md space-y-3 animate-in zoom-in-95">
+        <div className="glass-panel p-6 rounded-none border border-emerald-300 bg-emerald-50 text-emerald-950 shadow-md space-y-3 animate-in zoom-in-95">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl font-bold">
+            <div className="w-12 h-12 rounded-none bg-emerald-600 text-white flex items-center justify-center text-xl font-bold">
               ✓
             </div>
             <div>
@@ -85,7 +79,7 @@ export default function OnlineGivingPage() {
           </p>
           <button
             onClick={() => setSuccessReceipt(null)}
-            className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold shadow-xs"
+            className="px-4 py-2 rounded-none bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold shadow-xs"
           >
             Close Receipt
           </button>
@@ -93,7 +87,7 @@ export default function OnlineGivingPage() {
       )}
 
       {/* Main Giving Form Card */}
-      <div className="glass-panel p-6 rounded-3xl border border-slate-200 bg-white shadow-md space-y-5">
+      <div className="glass-panel p-6 rounded-none border border-slate-200 bg-white shadow-md space-y-5">
         <h3 className="font-display font-bold text-lg text-slate-900 border-b border-slate-100 pb-3">
           Make a Tithe, Offering or Seed Contribution
         </h3>
@@ -114,7 +108,7 @@ export default function OnlineGivingPage() {
                   key={cat.val}
                   type="button"
                   onClick={() => setType(cat.val as GivingType)}
-                  className={`p-3 rounded-2xl font-bold text-xs transition text-center border ${
+                  className={`p-3 rounded-none font-bold text-xs transition text-center border ${
                     type === cat.val
                       ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                       : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -142,7 +136,7 @@ export default function OnlineGivingPage() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-14 pr-4 py-3 text-slate-900 font-extrabold text-lg focus:outline-none focus:border-emerald-600 focus:bg-white"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-none pl-14 pr-4 py-3 text-slate-900 font-extrabold text-lg focus:outline-none focus:border-emerald-600 focus:bg-white"
                 />
               </div>
             </div>
@@ -152,7 +146,7 @@ export default function OnlineGivingPage() {
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-900 font-bold focus:outline-none focus:border-emerald-600"
+                className="w-full bg-slate-50 border border-slate-300 rounded-none p-3 text-slate-900 font-bold focus:outline-none focus:border-emerald-600"
               >
                 <option value="GHS">GHS (Ghana Cedi)</option>
                 <option value="USD">USD (US Dollar)</option>
@@ -168,7 +162,7 @@ export default function OnlineGivingPage() {
               <button
                 type="button"
                 onClick={() => setMethod('mobile_money')}
-                className={`p-3.5 rounded-2xl border text-left font-bold transition ${
+                className={`p-3.5 rounded-none border text-left font-bold transition ${
                   method === 'mobile_money'
                     ? 'bg-amber-50 text-amber-900 border-amber-400 shadow-xs'
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -186,7 +180,7 @@ export default function OnlineGivingPage() {
               <button
                 type="button"
                 onClick={() => setMethod('pos_card')}
-                className={`p-3.5 rounded-2xl border text-left font-bold transition ${
+                className={`p-3.5 rounded-none border text-left font-bold transition ${
                   method === 'pos_card'
                     ? 'bg-indigo-50 text-indigo-900 border-indigo-400 shadow-xs'
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -204,7 +198,7 @@ export default function OnlineGivingPage() {
               <button
                 type="button"
                 onClick={() => setMethod('bank_transfer')}
-                className={`p-3.5 rounded-2xl border text-left font-bold transition ${
+                className={`p-3.5 rounded-none border text-left font-bold transition ${
                   method === 'bank_transfer'
                     ? 'bg-emerald-50 text-emerald-900 border-emerald-400 shadow-xs'
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -223,14 +217,14 @@ export default function OnlineGivingPage() {
 
           {/* Mobile Money Details */}
           {method === 'mobile_money' && (
-            <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3">
+            <div className="p-4 rounded-none bg-amber-50/70 border border-amber-200 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-amber-900 font-bold mb-1">Network Provider</label>
                   <select
                     value={momoProvider}
                     onChange={(e) => setMomoProvider(e.target.value)}
-                    className="w-full bg-white border border-amber-300 rounded-xl p-2.5 text-amber-950 font-bold"
+                    className="w-full bg-white border border-amber-300 rounded-none p-2.5 text-amber-950 font-bold"
                   >
                     <option value="MTN Mobile Money">MTN Mobile Money (*170#)</option>
                     <option value="Telecel Cash">Telecel Cash (*110#)</option>
@@ -245,7 +239,7 @@ export default function OnlineGivingPage() {
                     value={momoNumber}
                     onChange={(e) => setMomoNumber(e.target.value)}
                     placeholder="+233244000111"
-                    className="w-full bg-white border border-amber-300 rounded-xl p-2.5 text-amber-950 font-bold"
+                    className="w-full bg-white border border-amber-300 rounded-none p-2.5 text-amber-950 font-bold"
                   />
                 </div>
               </div>
@@ -255,7 +249,7 @@ export default function OnlineGivingPage() {
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-base shadow-md transition"
+              className="w-full py-4 rounded-none bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-base shadow-md transition"
             >
               Complete Giving Transaction ({currency} {amount || '0.00'})
             </button>
@@ -265,7 +259,7 @@ export default function OnlineGivingPage() {
 
       {/* Personal Giving History */}
       {userGivingHistory.length > 0 && (
-        <div className="glass-panel p-5 rounded-3xl border border-slate-200 bg-white shadow-sm space-y-3">
+        <div className="glass-panel p-5 rounded-none border border-slate-200 bg-white shadow-sm space-y-3">
           <h4 className="font-display font-bold text-sm text-slate-900 border-b border-slate-100 pb-2">
             My Giving History & Digital Receipts
           </h4>

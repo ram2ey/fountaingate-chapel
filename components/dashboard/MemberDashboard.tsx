@@ -11,19 +11,13 @@ export const MemberDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* High-Contrast Welcome & Scripture Banner */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-indigo-200 bg-indigo-50/80 shadow-md space-y-3 relative overflow-hidden">
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full bg-indigo-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-xs">
-            Fountain Gate Chapel
-          </span>
-        </div>
-
+      {/* High-Contrast Welcome & Scripture Banner (No Pill Tag) */}
+      <div className="glass-panel p-6 sm:p-8 rounded-none border border-indigo-200 bg-indigo-50/80 shadow-md space-y-3 relative overflow-hidden">
         <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
           Welcome, {currentUser?.full_name || 'Beloved Member'}!
         </h1>
 
-        <div className="p-4 rounded-2xl bg-white border border-indigo-100 shadow-xs space-y-1">
+        <div className="p-4 rounded-none bg-white border border-indigo-100 shadow-xs space-y-1">
           <p className="text-xs sm:text-sm font-semibold text-slate-800 italic leading-relaxed">
             "The LORD bless you and keep you; the LORD make His face shine upon you and be gracious to you; the LORD turn His face toward you and give you peace."
           </p>
@@ -37,9 +31,9 @@ export const MemberDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <Link
           href="/giving"
-          className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/70 border border-emerald-200 hover:shadow-md transition text-left space-y-1.5"
+          className="p-4 rounded-none bg-gradient-to-br from-emerald-50 to-emerald-100/70 border border-emerald-200 hover:shadow-md transition text-left space-y-1.5"
         >
-          <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+          <div className="w-10 h-10 rounded-none bg-emerald-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
             💸
           </div>
           <p className="font-bold text-slate-900 text-sm">Online Giving</p>
@@ -48,9 +42,9 @@ export const MemberDashboard: React.FC = () => {
 
         <Link
           href="/prayer-wall"
-          className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/70 border border-amber-200 hover:shadow-md transition text-left space-y-1.5"
+          className="p-4 rounded-none bg-gradient-to-br from-amber-50 to-amber-100/70 border border-amber-200 hover:shadow-md transition text-left space-y-1.5"
         >
-          <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+          <div className="w-10 h-10 rounded-none bg-amber-500 text-white flex items-center justify-center font-bold text-lg shadow-sm">
             🙏
           </div>
           <p className="font-bold text-slate-900 text-sm">Prayer Wall</p>
@@ -59,9 +53,9 @@ export const MemberDashboard: React.FC = () => {
 
         <Link
           href="/members"
-          className="p-4 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100/70 border border-purple-200 hover:shadow-md transition text-left space-y-1.5"
+          className="p-4 rounded-none bg-gradient-to-br from-purple-50 to-purple-100/70 border border-purple-200 hover:shadow-md transition text-left space-y-1.5"
         >
-          <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+          <div className="w-10 h-10 rounded-none bg-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
             👥
           </div>
           <p className="font-bold text-slate-900 text-sm">Brethren Directory</p>
@@ -70,9 +64,9 @@ export const MemberDashboard: React.FC = () => {
 
         <Link
           href="/sermons"
-          className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100/70 border border-indigo-200 hover:shadow-md transition text-left space-y-1.5"
+          className="p-4 rounded-none bg-gradient-to-br from-indigo-50 to-indigo-100/70 border border-indigo-200 hover:shadow-md transition text-left space-y-1.5"
         >
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+          <div className="w-10 h-10 rounded-none bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
             🎧
           </div>
           <p className="font-bold text-slate-900 text-sm">Sermon Hub</p>
@@ -81,7 +75,7 @@ export const MemberDashboard: React.FC = () => {
       </div>
 
       {/* Community Prayer Highlights */}
-      <div className="glass-panel p-5 sm:p-6 rounded-3xl border border-slate-200 bg-white shadow-sm space-y-4">
+      <div className="glass-panel p-5 sm:p-6 rounded-none border border-slate-200 bg-white shadow-sm space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 className="font-display font-bold text-base text-slate-900">Community Prayer Requests & Intercession</h3>
@@ -94,7 +88,7 @@ export const MemberDashboard: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {activePrayers.map(req => (
-            <div key={req.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
+            <div key={req.id} className="p-4 rounded-none bg-slate-50 border border-slate-200 text-xs space-y-2">
               <div className="flex items-center justify-between font-bold">
                 <span className="text-slate-900 truncate">{req.title}</span>
                 <span className="text-[10px] text-amber-700 shrink-0">🙏 {req.prayed_count} prayed</span>

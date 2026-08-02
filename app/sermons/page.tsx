@@ -15,21 +15,18 @@ export default function SermonsPage() {
         </p>
       </div>
 
-      {/* High-Contrast Coming Soon Banner with Scripture */}
-      <div className="glass-panel p-8 sm:p-12 rounded-3xl border border-indigo-200 bg-indigo-50/90 text-center space-y-4 shadow-md relative overflow-hidden">
-        <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl mx-auto shadow-md">
+      {/* High-Contrast Coming Soon Banner with Scripture (No Pill Tag) */}
+      <div className="glass-panel p-8 sm:p-12 rounded-none border border-indigo-200 bg-indigo-50/90 text-center space-y-4 shadow-md relative overflow-hidden">
+        <div className="w-16 h-16 rounded-none bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl mx-auto shadow-md">
           🎧
         </div>
 
         <div className="space-y-2">
-          <span className="px-3 py-1 rounded-full bg-indigo-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-xs">
-            COMING SOON
-          </span>
           <h2 className="font-display font-extrabold text-2xl sm:text-4xl text-slate-900 tracking-tight">
             Digital Anointing Media Hub
           </h2>
           
-          <div className="p-4 rounded-2xl bg-white border border-indigo-100 shadow-xs max-w-xl mx-auto space-y-1">
+          <div className="p-4 rounded-none bg-white border border-indigo-100 shadow-xs max-w-xl mx-auto space-y-1">
             <p className="text-xs sm:text-sm font-semibold text-slate-800 italic leading-relaxed">
               "So then faith comes by hearing, and hearing by the word of God."
             </p>
@@ -40,10 +37,10 @@ export default function SermonsPage() {
         </div>
 
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs">
-          <div className="px-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-700 font-semibold shadow-xs">
+          <div className="px-4 py-2.5 rounded-none bg-white border border-slate-200 text-slate-700 font-semibold shadow-xs">
             📅 Sunday Anointing Service: <span className="text-indigo-700 font-bold">8:30 AM GMT</span>
           </div>
-          <div className="px-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-700 font-semibold shadow-xs">
+          <div className="px-4 py-2.5 rounded-none bg-white border border-slate-200 text-slate-700 font-semibold shadow-xs">
             📖 Mid-Week Teaching Service: <span className="text-indigo-700 font-bold">6:00 PM GMT</span>
           </div>
         </div>
