@@ -3,7 +3,6 @@ import './globals.css';
 import { ChurchProvider } from '../lib/context/ChurchContext';
 import { Sidebar } from '../components/layout/Sidebar';
 import { Header } from '../components/layout/Header';
-import { MobileBottomNav } from '../components/layout/MobileBottomNav';
 
 export const metadata: Metadata = {
   title: 'Fountain Gate Chapel - Mobile Management System',
@@ -17,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-slate-50 text-slate-900 min-h-screen antialiased selection:bg-indigo-600 selection:text-white pb-16 md:pb-0">
+      <body className="bg-slate-50 text-slate-900 min-h-screen antialiased selection:bg-indigo-600 selection:text-white">
         <ChurchProvider>
           <div className="flex min-h-screen bg-slate-50">
             <Sidebar />
@@ -28,7 +27,6 @@ export default function RootLayout({
               </main>
             </div>
           </div>
-          <MobileBottomNav />
         </ChurchProvider>
       </body>
     </html>
