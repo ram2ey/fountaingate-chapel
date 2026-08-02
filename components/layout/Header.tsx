@@ -32,12 +32,12 @@ export const Header: React.FC = () => {
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         {/* Left Side: Brand Name & Search */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Link href="/" className="flex items-center gap-2 shrink-0 md:hidden">
             <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">
               FGC
             </div>
             <span className="font-display font-extrabold text-sm text-slate-900 hidden xs:inline">
-              Fountain Gate Chapel
+              FGC
             </span>
           </Link>
 
@@ -77,10 +77,36 @@ export const Header: React.FC = () => {
           {/* Role Badge */}
           <RoleBadge />
 
-          {/* Hamburger Menu Toggle Button (Mobile & Desktop Drawer) */}
+          {/* Settings Link on Desktop */}
+          <Link
+            href="/settings"
+            className="hidden md:inline-flex p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition"
+            title="User Account Settings"
+          >
+            Settings
+          </Link>
+
+          {/* Log Out Button on Desktop */}
+          {currentUser ? (
+            <button
+              onClick={logout}
+              className="hidden md:inline-flex px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold border border-rose-200 transition"
+            >
+              Log Out
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="hidden md:inline-flex px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition"
+            >
+              Log In
+            </Link>
+          )}
+
+          {/* Hamburger Menu Toggle Button (Mobile & Tablet ONLY - Hidden on Desktop) */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-base font-bold transition flex items-center justify-center border border-slate-200"
+            className="md:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-base font-bold transition flex items-center justify-center border border-slate-200"
             title="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? '✕' : '☰'}
@@ -88,9 +114,9 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Hamburger Navigation Drawer Modal */}
+      {/* Hamburger Navigation Drawer Modal (Mobile & Tablet ONLY - Hidden on Desktop) */}
       {mobileMenuOpen && (
-        <>
+        <div className="md:hidden">
           <div className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs" onClick={() => setMobileMenuOpen(false)} />
           <div className="absolute right-3 top-14 z-50 w-72 rounded-3xl bg-white border border-slate-200 shadow-2xl p-4 space-y-3 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 px-1">
@@ -158,7 +184,7 @@ export const Header: React.FC = () => {
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
     </header>
   );
