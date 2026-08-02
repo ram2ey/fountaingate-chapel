@@ -4,11 +4,10 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useChurch } from '../../lib/context/ChurchContext';
-import { RoleBadge } from './RoleBadge';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
-  const { isLive, searchQuery, setSearchQuery, currentUser, logout, currentRole, members } = useChurch();
+  const { isLive, currentUser, logout, currentRole, members } = useChurch();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const atRiskCount = members.filter(m => m.status === 'at_risk').length;
@@ -30,30 +29,19 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-3 transition-all shadow-sm">
       <div className="flex items-center justify-between gap-2 sm:gap-4">
-        {/* Left Side: Brand Name & Search */}
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Link href="/" className="flex items-center gap-2 shrink-0 md:hidden">
+        {/* Left Side: Brand Name */}
+        <div className="flex items-center gap-3 shrink-0">
+          <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">
               FGC
             </div>
-            <span className="font-display font-extrabold text-sm text-slate-900 hidden xs:inline">
-              FGC
+            <span className="font-display font-extrabold text-sm text-slate-900">
+              Fountain Gate Chapel
             </span>
           </Link>
-
-          {/* Search Bar */}
-          <div className="relative flex-1 max-w-xs">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
-              className="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
-            />
-          </div>
         </div>
 
-        {/* Right Side: Live Indicator, Role Badge & Controls */}
+        {/* Right Side: Live Indicator, Entrance Kiosk, Settings & Hamburger Menu */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Live Alert Banner */}
           {isLive && (
@@ -71,8 +59,10 @@ export const Header: React.FC = () => {
             <span>Kiosk</span>
           </a>
 
-          {/* Role Badge */}
-          <RoleBadge />
+          {/* User Display Badge (Fixed Role - Non-switchable) */}
+          <div className="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700 uppercase">
+            {currentRole}
+          </div>
 
           {/* Settings Link on Desktop */}
           <Link
