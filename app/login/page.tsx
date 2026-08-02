@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
-  // Complete Register State
+  // Register State
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [regPhone, setRegPhone] = useState('');
@@ -22,7 +22,6 @@ export default function LoginPage() {
   const [regDob, setRegDob] = useState('');
   const [regAddress, setRegAddress] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  const [cellGroup, setCellGroup] = useState('Victory Cell');
 
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -48,7 +47,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Register complete new member in church context
     addMember({
       first_name: firstName,
       last_name: lastName,
@@ -56,12 +54,11 @@ export default function LoginPage() {
       email: regEmail || undefined,
       dob: regDob || undefined,
       address: regAddress || undefined,
-      cell_group: cellGroup,
+      cell_group: 'FGC Sanctuary',
       status: 'active',
       tags: ['Registered Member']
     });
 
-    // Auto sign in
     loginWithPhone(regPhone, regPassword);
     router.push('/');
   };
@@ -196,29 +193,14 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Date of Birth (Optional)</label>
-                <input
-                  type="date"
-                  value={regDob}
-                  onChange={(e) => setRegDob(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-medium focus:outline-none focus:border-indigo-600"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Select Cell Group</label>
-                <select
-                  value={cellGroup}
-                  onChange={(e) => setCellGroup(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-bold focus:outline-none focus:border-indigo-600"
-                >
-                  <option value="Zion Warriors Cell">Zion Warriors Cell</option>
-                  <option value="Grace & Truth Cell">Grace & Truth Cell</option>
-                  <option value="Anointing & Power Cell">Anointing & Power Cell</option>
-                  <option value="Shalom Family Cell">Shalom Family Cell</option>
-                </select>
-              </div>
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">Date of Birth (Optional)</label>
+              <input
+                type="date"
+                value={regDob}
+                onChange={(e) => setRegDob(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-medium focus:outline-none focus:border-indigo-600"
+              />
             </div>
 
             <div>

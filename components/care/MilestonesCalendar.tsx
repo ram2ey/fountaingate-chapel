@@ -6,7 +6,6 @@ import { useChurch } from '../../lib/context/ChurchContext';
 export const MilestonesCalendar: React.FC = () => {
   const { members } = useChurch();
 
-  // Filter birthdays in current month
   const birthdayMembers = members.filter(m => m.dob);
 
   return (
@@ -17,27 +16,32 @@ export const MilestonesCalendar: React.FC = () => {
           <p className="text-xs text-slate-500">Upcoming birthdays for pastoral felicitations</p>
         </div>
         <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold border border-amber-200">
-          August Birthdays
+          Birthday Blessings
         </span>
       </div>
 
       <div className="space-y-2 mt-4">
-        {birthdayMembers.map((member) => (
-          <div key={member.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-            <div>
-              <p className="font-bold text-slate-900 text-xs">{member.first_name} {member.last_name}</p>
-              <p className="text-[10px] text-slate-500">{member.cell_group} • DOB: {member.dob}</p>
+        {birthdayMembers.map((member) => {
+          const cleanPhone = member.phone.replace(/[^0-9]/g, '');
+          const message = encodeURIComponent(`Shalom ${member.first_name}, happy birthday from Fountain Gate Chapel! May God multiply His grace, wisdom, and blessings upon your life this year! 🎉🎂`);
+
+          return (
+            <div key={member.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+              <div>
+                <p className="font-bold text-slate-900 text-xs">{member.first_name} {member.last_name}</p>
+                <p className="text-[10px] text-slate-500">DOB: {member.dob} {member.address ? `• ${member.address}` : ''}</p>
+              </div>
+              <a
+                href={`https://wa.me/${cleanPhone}?text=${message}`}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-xs transition shrink-0"
+              >
+                💬 WhatsApp Blessing
+              </a>
             </div>
-            <a
-              href={`https://wa.me/${member.phone.replace(/[^0-9]/g, '')}?text=Happy%20Birthday%20${encodeURIComponent(member.first_name)}!%20Fountain%20Gate%20Chapel%20prays%20God's%20abundant%20blessings%20upon%20your%20new%20age.`}
-              target="_blank"
-              rel="noreferrer"
-              className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] shadow-sm transition"
-            >
-              Send Birthday Wishes
-            </a>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

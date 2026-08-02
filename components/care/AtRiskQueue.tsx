@@ -36,7 +36,7 @@ export const AtRiskQueue: React.FC = () => {
                   </div>
                   <div>
                     <h5 className="font-bold text-slate-900 text-sm">{member.first_name} {member.last_name}</h5>
-                    <p className="text-[10px] text-slate-500">{member.cell_group} • Phone: {member.phone}</p>
+                    <p className="text-[10px] text-slate-500">Phone: {member.phone} {member.address ? `• ${member.address}` : ''}</p>
                   </div>
                 </div>
 

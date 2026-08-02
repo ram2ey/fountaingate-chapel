@@ -1,15 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
 
-export const BroadcastComposer: React.FC = () => {
+interface Props {
+  initialMessage?: string;
+}
+
+export const BroadcastComposer: React.FC<Props> = ({ initialMessage }) => {
   const { members, broadcasts, sendBroadcast } = useChurch();
 
   const [channel, setChannel] = useState<'WhatsApp' | 'SMS'>('WhatsApp');
   const [targetGroup, setTargetGroup] = useState('All Active Members');
   const [message, setMessage] = useState('');
   const [sentNotice, setSentNotice] = useState('');
+
+  useEffect(() => {
+    if (initialMessage) {
+      setMessage(initialMessage);
+    }
+  }, [initialMessage]);
 
   const targetCount = targetGroup === 'All Active Members'
     ? members.filter(m => m.status === 'active').length
@@ -38,7 +48,7 @@ export const BroadcastComposer: React.FC = () => {
     <div className="glass-panel p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
       <div>
         <h4 className="font-display font-bold text-base text-slate-900">WhatsApp & SMS Broadcast Composer</h4>
-        <p className="text-xs text-slate-500">Send instant announcements to cell groups and sanctuary members</p>
+        <p className="text-xs text-slate-500">Send instant announcements to sanctuary members and guests</p>
       </div>
 
       {sentNotice && (
@@ -95,7 +105,7 @@ export const BroadcastComposer: React.FC = () => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Shalom Beloved, join us tomorrow for anointing service at 8:30 AM..."
-            className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white resize-none"
+            className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white resize-none font-medium"
           />
         </div>
 

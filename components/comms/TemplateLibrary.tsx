@@ -14,13 +14,17 @@ const TEMPLATES = [
     text: 'God bless you for worshipping with Fountain Gate Chapel today! We are honored to have you. Our pastoral team looks forward to connecting.'
   },
   {
-    title: 'Mid-week Cell Group Meeting',
-    category: 'Cell Fellowship',
-    text: 'Beloved member, Cell Fellowship meets this Wednesday at 6:30 PM. Come ready for prayer, Bible study, and fellowship.'
+    title: 'Mid-week Teaching Service',
+    category: 'Bible Study',
+    text: 'Beloved member, join us for our Mid-week Teaching & Deliverance service this Wednesday at 6:00 PM. Come ready for prayer and Bible study.'
   }
 ];
 
-export const TemplateLibrary: React.FC = () => {
+interface Props {
+  onSelectTemplate: (text: string) => void;
+}
+
+export const TemplateLibrary: React.FC<Props> = ({ onSelectTemplate }) => {
   return (
     <div className="glass-panel p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
       <div>
@@ -30,7 +34,7 @@ export const TemplateLibrary: React.FC = () => {
 
       <div className="space-y-3">
         {TEMPLATES.map((tmpl, idx) => (
-          <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+          <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
             <div className="flex items-center justify-between">
               <h5 className="font-bold text-slate-900 text-xs">{tmpl.title}</h5>
               <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px] font-bold">
@@ -38,6 +42,12 @@ export const TemplateLibrary: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-slate-700 leading-relaxed font-medium">{tmpl.text}</p>
+            <button
+              onClick={() => onSelectTemplate(tmpl.text)}
+              className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] transition shadow-xs"
+            >
+              Use Template →
+            </button>
           </div>
         ))}
       </div>

@@ -2,41 +2,53 @@
 
 import React, { useState } from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
-import { Member } from '../../lib/types/church';
 
 export default function MembersPage() {
-  const { members, deleteMember, currentRole } = useChurch();
+  const { members, deleteMember, addCareNote, currentRole, currentUser } = useChurch();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCell, setSelectedCell] = useState('All');
+  
+  // Pastoral Care Note Modal State
+  const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
+  const [noteText, setNoteText] = useState('');
+  const [isConfidential, setIsConfidential] = useState(true);
 
   const isPastorOrAdmin = currentRole === 'admin' || currentRole === 'pastor';
 
-  const cellGroups = ['All', ...Array.from(new Set(members.map(m => m.cell_group)))];
-
-  // Enhanced Multi-Field Search Filter
+  // Multi-Field Search Filter (Name, Phone, Address/City)
   const filteredMembers = members.filter(m => {
     const cleanSearch = searchTerm.trim().toLowerCase();
 
     const fullName = `${m.first_name} ${m.last_name}`.toLowerCase();
     const phone = m.phone.toLowerCase();
-    const cellGroup = m.cell_group.toLowerCase();
     const address = (m.address || '').toLowerCase();
 
-    const matchesSearch = cleanSearch === '' || 
+    return cleanSearch === '' || 
       fullName.includes(cleanSearch) ||
       phone.includes(cleanSearch) ||
-      cellGroup.includes(cleanSearch) ||
       address.includes(cleanSearch);
-
-    const matchesCell = selectedCell === 'All' || m.cell_group === selectedCell;
-
-    return matchesSearch && matchesCell;
   });
 
   const handleWhatsApp = (phone: string, name: string) => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     const message = encodeURIComponent(`Shalom ${name}, greetings from Fountain Gate Chapel!`);
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+  };
+
+  const handleSaveCareNote = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMember || !noteText.trim()) return;
+
+    addCareNote({
+      member_id: selectedMember.id,
+      member_name: selectedMember.name,
+      pastor_id: currentUser?.id || 'u1',
+      pastor_name: currentUser?.full_name || 'Pastor',
+      note: noteText.trim(),
+      is_confidential: isConfidential
+    });
+
+    setSelectedMember(null);
+    setNoteText('');
   };
 
   return (
@@ -49,7 +61,7 @@ export default function MembersPage() {
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             {isPastorOrAdmin 
-              ? `Managing ${members.length} registered church members and cell fellowship groups.`
+              ? `Managing ${members.length} registered church members across Fountain Gate Chapel.`
               : `Connect and fellowship with ${members.length} brethren across Fountain Gate Chapel.`}
           </p>
         </div>
@@ -62,7 +74,7 @@ export default function MembersPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search brethren by Name, Phone (+233...), Cell Group, or City (e.g. Accra, Bolga)..."
+            placeholder="Search brethren by Name, Phone (+233...), or City (e.g. Accra, Bolga)..."
             className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-900 font-bold placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:border-indigo-600 focus:bg-white transition"
           />
           {searchTerm && (
@@ -74,24 +86,6 @@ export default function MembersPage() {
             </button>
           )}
         </div>
-
-        {/* Cell Group Filter Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pt-1 text-xs scrollbar-none">
-          <span className="text-[10px] font-bold uppercase text-slate-400 shrink-0">Filter Cell:</span>
-          {cellGroups.map(cell => (
-            <button
-              key={cell}
-              onClick={() => setSelectedCell(cell)}
-              className={`px-3 py-1 rounded-xl font-bold whitespace-nowrap transition border text-xs ${
-                selectedCell === cell
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
-              }`}
-            >
-              {cell}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Members Directory List */}
@@ -102,7 +96,7 @@ export default function MembersPage() {
           </div>
           <h3 className="font-display font-bold text-slate-900 text-base">No Brethren Match Search</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Try clearing your search term or selecting "All" cell groups to view full directory.
+            Try clearing your search term to view full directory.
           </p>
         </div>
       ) : (
@@ -114,7 +108,6 @@ export default function MembersPage() {
                   <h3 className="font-display font-bold text-base text-slate-900">
                     {member.first_name} {member.last_name}
                   </h3>
-                  <p className="text-xs text-indigo-600 font-semibold">{member.cell_group}</p>
                 </div>
 
                 {/* Show internal status tags only to Pastors/Admins */}
@@ -142,13 +135,22 @@ export default function MembersPage() {
                 )}
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
                 <button
                   onClick={() => handleWhatsApp(member.phone, `${member.first_name} ${member.last_name}`)}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition border border-emerald-200"
                 >
                   <span>💬 WhatsApp</span>
                 </button>
+
+                {isPastorOrAdmin && (
+                  <button
+                    onClick={() => setSelectedMember({ id: member.id, name: `${member.first_name} ${member.last_name}` })}
+                    className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200 transition"
+                  >
+                    + Care Note
+                  </button>
+                )}
 
                 {currentRole === 'admin' && (
                   <button
@@ -162,6 +164,66 @@ export default function MembersPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pastoral Care Note Modal */}
+      {selectedMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="font-display font-bold text-base text-slate-900">Log Pastoral Care Note</h3>
+                <p className="text-xs text-indigo-600 font-semibold">{selectedMember.name}</p>
+              </div>
+              <button onClick={() => setSelectedMember(null)} className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center">
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCareNote} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Care & Counseling Note *</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  placeholder="Record details of pastoral visit, phone counseling, or prayer follow-up..."
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-900 focus:outline-none focus:border-indigo-600 focus:bg-white resize-none"
+                />
+              </div>
+
+              <label className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50/60 border border-indigo-100 cursor-pointer">
+                <div>
+                  <p className="font-bold text-indigo-900">Confidential Note</p>
+                  <p className="text-[10px] text-slate-500">Restricted to Pastoral Team</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={isConfidential}
+                  onChange={(e) => setIsConfidential(e.target.checked)}
+                  className="w-4 h-4 rounded text-indigo-600"
+                />
+              </label>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedMember(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-200 text-slate-700 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md"
+                >
+                  Save Care Note
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

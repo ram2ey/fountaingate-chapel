@@ -32,6 +32,7 @@ import {
 
 interface ChurchContextType {
   currentUser: SystemUser | null;
+  updateCurrentUser: (updates: Partial<SystemUser>) => void;
   loginWithPhone: (phone: string, pass: string) => boolean;
   logout: () => void;
   currentRole: UserRole;
@@ -154,6 +155,15 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setCurrentRole('member');
     addAuditLog('LOGIN', `Member logged in with phone ${phone}`);
     return true;
+  };
+
+  const updateCurrentUser = (updates: Partial<SystemUser>) => {
+    if (currentUser) {
+      const updated = { ...currentUser, ...updates };
+      setCurrentUser(updated);
+      setSystemUsers(prev => prev.map(u => u.id === currentUser.id ? updated : u));
+      addAuditLog('UPDATE_PROFILE', `User ${updated.full_name} updated profile details`);
+    }
   };
 
   const logout = () => {
@@ -368,6 +378,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   return (
     <ChurchContext.Provider value={{
       currentUser,
+      updateCurrentUser,
       loginWithPhone,
       logout,
       currentRole,
