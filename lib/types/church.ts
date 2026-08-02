@@ -24,17 +24,18 @@ export type PaymentMethod =
   | 'bank_transfer'
   | 'online_checkout';
 
-export interface Branch {
+export interface SystemUser {
   id: string;
-  name: string;
-  location: string;
-  country: string;
-  is_main_campus: boolean;
+  phone: string;
+  full_name: string;
+  email?: string;
+  role: UserRole;
+  avatar_url?: string;
+  created_at: string;
 }
 
 export interface Member {
   id: string;
-  branch_id: string;
   first_name: string;
   last_name: string;
   email?: string;
@@ -51,7 +52,6 @@ export interface Member {
 
 export interface AttendanceLog {
   id: string;
-  branch_id: string;
   member_id: string;
   member_name: string;
   event_type: 'Sunday Service' | 'Mid-week Cell' | 'Night Vigil';
@@ -73,7 +73,6 @@ export interface CareNote {
 
 export interface Sermon {
   id: string;
-  branch_id: string;
   title: string;
   speaker: string;
   series?: string;
@@ -87,7 +86,6 @@ export interface Sermon {
 
 export interface Contribution {
   id: string;
-  branch_id: string;
   member_id?: string;
   donor_name: string;
   amount: number;
@@ -100,7 +98,6 @@ export interface Contribution {
 
 export interface Broadcast {
   id: string;
-  branch_id?: string;
   channel: 'WhatsApp' | 'SMS';
   target_group: string;
   message: string;
@@ -114,9 +111,16 @@ export interface GuestRetentionItem {
   member_id: string;
   guest_name: string;
   phone: string;
-  first_visit_date: string;
-  day1_welcome_sent: boolean;
-  day3_call_done: boolean;
-  day7_class_invited: boolean;
+  first_visited_at: string;
+  stage: 'Intake' | 'Pastoral Welcome Call' | 'Cell Integration' | 'Water Baptism' | 'Full Member';
   notes?: string;
+}
+
+export interface AuditLog {
+  id: string;
+  user_phone: string;
+  user_name: string;
+  action: string;
+  details: string;
+  created_at: string;
 }

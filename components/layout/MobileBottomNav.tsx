@@ -15,9 +15,9 @@ export const MobileBottomNav: React.FC = () => {
     { label: 'Overview', href: '/', roles: ['admin', 'pastor'] },
     { label: 'Members', href: '/members', roles: ['admin', 'pastor'] },
     { label: 'Care', href: '/pastoral-care', badge: atRiskCount > 0 ? atRiskCount : undefined, roles: ['admin', 'pastor'] },
-    { label: 'Sermons', href: '/sermons', roles: ['admin', 'pastor', 'member'] },
     { label: 'Giving', href: '/financials', roles: ['admin'] },
-    { label: 'Kiosk', href: '/kiosk', roles: ['admin', 'pastor'] },
+    { label: 'Admin', href: '/admin', roles: ['admin'] },
+    { label: 'Settings', href: '/settings', roles: ['admin', 'pastor', 'member'] },
   ];
 
   return (
@@ -33,7 +33,7 @@ export const MobileBottomNav: React.FC = () => {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition text-[11px] font-semibold relative ${
+              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition text-[11px] font-semibold relative ${
                 isActive
                   ? 'text-indigo-600 bg-indigo-50 font-bold'
                   : 'text-slate-500 hover:text-slate-900'

@@ -7,7 +7,7 @@ import { useChurch } from '../../lib/context/ChurchContext';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const { currentRole, members, currentBranch } = useChurch();
+  const { currentRole, members, currentUser } = useChurch();
 
   const atRiskCount = members.filter(m => m.status === 'at_risk').length;
 
@@ -20,6 +20,8 @@ export const Sidebar: React.FC = () => {
     { label: 'Financials & Tithe Ledger', href: '/financials', roles: ['admin'] },
     { label: 'Tablet Entrance Kiosk', href: '/kiosk', roles: ['admin', 'pastor'] },
     { label: 'Guest Intake Form (QR)', href: '/guest-intake', roles: ['admin', 'pastor', 'member'] },
+    { label: 'Admin Management Panel', href: '/admin', roles: ['admin'] },
+    { label: 'User Account Settings', href: '/settings', roles: ['admin', 'pastor', 'member'] },
   ];
 
   return (
@@ -27,11 +29,11 @@ export const Sidebar: React.FC = () => {
       <div>
         {/* Brand Header */}
         <div className="p-5 border-b border-slate-100 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-indigo-900 flex items-center justify-center text-white font-bold text-sm shadow-md">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
             FGC
           </div>
           <div>
-            <h1 className="font-display font-bold text-sm text-slate-900 leading-tight">FOUNTAIN GATE</h1>
+            <h1 className="font-display font-extrabold text-sm text-slate-900 leading-tight">FOUNTAIN GATE</h1>
             <p className="text-[10px] tracking-wider font-semibold text-amber-600 uppercase">Chapel Management</p>
           </div>
         </div>
@@ -70,17 +72,14 @@ export const Sidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* Footer Info Box */}
+      {/* Footer User Info */}
       <div className="p-4 m-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold uppercase text-slate-400">Campus Status</span>
-          <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-            Active
-          </span>
+          <span className="text-[10px] font-bold uppercase text-slate-400">Active User</span>
+          <span className="text-[10px] font-bold text-indigo-700 uppercase">{currentRole}</span>
         </div>
-        <p className="font-bold text-slate-800 text-[11px] truncate">{currentBranch.name}</p>
-        <p className="text-[10px] text-slate-500 mt-0.5">{members.length} Registered Members</p>
+        <p className="font-bold text-slate-900 text-xs truncate">{currentUser?.full_name || 'FGC Leader'}</p>
+        <p className="text-[10px] text-slate-500 mt-0.5">{currentUser?.phone || '+233 244 000 111'}</p>
       </div>
     </aside>
   );

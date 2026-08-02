@@ -10,7 +10,7 @@ import { AddMemberModal } from '../components/members/AddMemberModal';
 import { useChurch } from '../lib/context/ChurchContext';
 
 export default function DashboardPage() {
-  const { currentBranch, isLive, setIsLive, currentRole } = useChurch();
+  const { isLive, setIsLive, currentRole } = useChurch();
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
 
@@ -24,7 +24,7 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-xs font-bold">
-                {currentBranch.name}
+                Fountain Gate Chapel
               </span>
               <span className="text-xs text-indigo-200">|</span>
               <span className="text-xs text-indigo-200 font-medium">Real-time Operations</span>

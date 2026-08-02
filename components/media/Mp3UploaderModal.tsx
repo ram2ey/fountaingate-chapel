@@ -8,7 +8,7 @@ interface Props {
 }
 
 export const Mp3UploaderModal: React.FC<Props> = ({ onClose }) => {
-  const { addSermon, currentBranch } = useChurch();
+  const { addSermon } = useChurch();
 
   const [title, setTitle] = useState('');
   const [speaker, setSpeaker] = useState('Rev. Eastwood Anaba');
@@ -21,7 +21,6 @@ export const Mp3UploaderModal: React.FC<Props> = ({ onClose }) => {
     if (!title || !speaker) return;
 
     addSermon({
-      branch_id: currentBranch.id,
       title,
       speaker,
       series: series || undefined,

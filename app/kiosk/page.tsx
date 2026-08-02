@@ -8,7 +8,7 @@ import { LanguageSwitcher } from '../../components/layout/LanguageSwitcher';
 import { Member } from '../../lib/types/church';
 
 export default function KioskPage() {
-  const { currentBranch, isOnline, pendingOfflineCount, syncOfflineCheckIns, t } = useChurch();
+  const { isOnline, pendingOfflineCount, syncOfflineCheckIns, t } = useChurch();
   const [checkedInMember, setCheckedInMember] = useState<Member | null>(null);
 
   return (
@@ -46,7 +46,7 @@ export default function KioskPage() {
           {t.welcomeHeader}
         </h1>
         <p className="text-xs font-bold text-amber-700 uppercase tracking-widest">
-          {currentBranch.name} • {t.subHeaderKiosk}
+          FOUNTAIN GATE CHAPEL • {t.subHeaderKiosk}
         </p>
       </div>
 

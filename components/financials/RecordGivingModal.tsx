@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const RecordGivingModal: React.FC<Props> = ({ onClose }) => {
-  const { members, addContribution, currentBranch } = useChurch();
+  const { members, addContribution } = useChurch();
 
   const [donorType, setDonorType] = useState<'member' | 'guest'>('member');
   const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id || '');
@@ -26,7 +26,6 @@ export const RecordGivingModal: React.FC<Props> = ({ onClose }) => {
     const selectedMember = members.find(m => m.id === selectedMemberId);
 
     addContribution({
-      branch_id: currentBranch.id,
       member_id: donorType === 'member' ? selectedMemberId : undefined,
       donor_name: donorType === 'guest' ? guestName : (selectedMember ? `${selectedMember.first_name} ${selectedMember.last_name}` : 'Member Donor'),
       amount: parseFloat(amount),

@@ -8,7 +8,7 @@ interface Props {
 }
 
 export const AddMemberModal: React.FC<Props> = ({ onClose }) => {
-  const { addMember, currentBranch } = useChurch();
+  const { addMember } = useChurch();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -23,7 +23,6 @@ export const AddMemberModal: React.FC<Props> = ({ onClose }) => {
     if (!firstName || !lastName || !phone) return;
 
     addMember({
-      branch_id: currentBranch.id,
       first_name: firstName,
       last_name: lastName,
       email: email || undefined,

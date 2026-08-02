@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
 
 export const BroadcastComposer: React.FC = () => {
-  const { members, broadcasts, sendBroadcast, currentBranch } = useChurch();
+  const { members, broadcasts, sendBroadcast } = useChurch();
 
   const [channel, setChannel] = useState<'WhatsApp' | 'SMS'>('WhatsApp');
   const [targetGroup, setTargetGroup] = useState('All Active Members');
@@ -22,7 +22,6 @@ export const BroadcastComposer: React.FC = () => {
     if (!message) return;
 
     sendBroadcast({
-      branch_id: currentBranch.id,
       channel,
       target_group: targetGroup,
       message,

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
 
 export default function GuestIntakePage() {
-  const { addMember, currentBranch, t } = useChurch();
+  const { addMember, t } = useChurch();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -19,7 +19,6 @@ export default function GuestIntakePage() {
     if (!firstName || !lastName || !phone) return;
 
     addMember({
-      branch_id: currentBranch.id,
       first_name: firstName,
       last_name: lastName,
       email: email || undefined,
@@ -42,7 +41,7 @@ export default function GuestIntakePage() {
         </div>
         <div>
           <span className="px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-[10px] font-bold uppercase tracking-wider">
-            {currentBranch.name}
+            Fountain Gate Chapel
           </span>
           <h2 className="font-display font-bold text-2xl text-white mt-2">{t.guestWelcomeHeader}</h2>
           <p className="text-xs text-indigo-100 max-w-xs mx-auto">
