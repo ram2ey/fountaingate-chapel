@@ -11,17 +11,24 @@ export const MemberDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Welcome Banner */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 text-white relative overflow-hidden shadow-xl">
-        <div className="relative z-10 space-y-2">
-          <span className="px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-xs font-bold uppercase tracking-wider">
-            Fountain Gate Chapel Member Portal
+      {/* High-Contrast Welcome & Scripture Banner */}
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-indigo-200 bg-indigo-50/80 shadow-md space-y-3 relative overflow-hidden">
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 rounded-full bg-indigo-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-xs">
+            Fountain Gate Chapel
           </span>
-          <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Welcome, {currentUser?.full_name || 'Beloved Member'}!
-          </h1>
-          <p className="text-xs sm:text-sm text-indigo-100 max-w-2xl leading-relaxed">
-            Grace and peace be multiplied unto you. Access online giving, community prayer requests, digital media, and church brethren contacts.
+        </div>
+
+        <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          Welcome, {currentUser?.full_name || 'Beloved Member'}!
+        </h1>
+
+        <div className="p-4 rounded-2xl bg-white border border-indigo-100 shadow-xs space-y-1">
+          <p className="text-xs sm:text-sm font-semibold text-slate-800 italic leading-relaxed">
+            "The LORD bless you and keep you; the LORD make His face shine upon you and be gracious to you; the LORD turn His face toward you and give you peace."
+          </p>
+          <p className="text-[11px] font-extrabold text-indigo-700 text-right uppercase tracking-wider">
+            — Numbers 6:24-26
           </p>
         </div>
       </div>

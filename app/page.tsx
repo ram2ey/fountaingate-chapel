@@ -26,21 +26,21 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4 sm:space-y-6 pb-8">
       {/* Header Banner */}
-      <div className="glass-panel p-5 sm:p-6 rounded-3xl border border-slate-200 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 text-white relative overflow-hidden shadow-xl">
+      <div className="glass-panel p-5 sm:p-6 rounded-3xl border border-indigo-200 bg-indigo-50/80 shadow-md space-y-3 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-xs font-bold">
+              <span className="px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-xs font-bold">
                 Fountain Gate Chapel
               </span>
-              <span className="text-xs text-indigo-200">|</span>
-              <span className="text-xs text-indigo-200 font-medium">Real-time Operations</span>
+              <span className="text-xs text-slate-400">|</span>
+              <span className="text-xs text-slate-600 font-semibold">Real-time Pastoral Operations</span>
             </div>
-            <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
+            <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
               Pastoral Executive Dashboard
             </h2>
-            <p className="text-xs sm:text-sm text-indigo-100 mt-1 max-w-2xl">
-              Proactive member care tracking, live service ecosystem, direct WhatsApp outreach, and real-time financial stewardship.
+            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl font-medium">
+              "Be shepherds of God's flock that is under your care, watching over them." — 1 Peter 5:2
             </p>
           </div>
 
@@ -48,7 +48,7 @@ export default function DashboardPage() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowCheckIn(true)}
-              className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition shadow-md"
+              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow-md"
             >
               <span>Rapid Attendance Check-In</span>
             </button>
@@ -56,7 +56,7 @@ export default function DashboardPage() {
             {isAdmin && (
               <button
                 onClick={() => setShowAddMember(true)}
-                className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition"
+                className="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition"
               >
                 <span>+ Member (Admin)</span>
               </button>
@@ -66,8 +66,8 @@ export default function DashboardPage() {
               onClick={() => setIsLive(!isLive)}
               className={`px-3.5 py-2.5 rounded-xl font-bold text-xs border transition ${
                 isLive
-                  ? 'bg-rose-500 text-white border-rose-400 animate-pulse'
-                  : 'bg-indigo-950/60 text-indigo-200 border-indigo-700 hover:bg-indigo-900'
+                  ? 'bg-rose-500 text-white border-rose-400 animate-pulse shadow-md'
+                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
               }`}
             >
               <span>{isLive ? 'Live Active' : 'Go Live'}</span>

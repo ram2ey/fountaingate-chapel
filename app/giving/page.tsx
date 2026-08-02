@@ -47,17 +47,24 @@ export default function OnlineGivingPage() {
 
   return (
     <div className="space-y-6 pb-8 max-w-4xl mx-auto">
-      {/* Header Banner */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 bg-gradient-to-r from-emerald-900 via-emerald-800 to-indigo-950 text-white relative overflow-hidden shadow-xl">
-        <div className="relative z-10 space-y-2">
-          <span className="px-3 py-1 rounded-full bg-emerald-400/20 border border-emerald-300/40 text-emerald-300 text-xs font-bold uppercase tracking-wider">
-            Online Kingdom Stewardship
+      {/* High-Contrast Welcome & Scripture Banner */}
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-emerald-200 bg-emerald-50/80 shadow-md space-y-3 relative overflow-hidden">
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-xs">
+            Kingdom Stewardship
           </span>
-          <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Online Giving & Tithe Portal
-          </h1>
-          <p className="text-xs sm:text-sm text-emerald-100 max-w-2xl leading-relaxed">
-            "Honor the LORD with your wealth, with the firstfruits of all your crops." — Proverbs 3:9. Fast, secure Mobile Money and Card giving.
+        </div>
+
+        <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          Online Giving & Tithe Portal
+        </h1>
+
+        <div className="p-4 rounded-2xl bg-white border border-emerald-100 shadow-xs space-y-1">
+          <p className="text-xs sm:text-sm font-semibold text-slate-800 italic leading-relaxed">
+            "Honor the LORD with your wealth, with the firstfruits of all your crops; then your barns will be filled to overflowing, and your vats will brim over with new wine."
+          </p>
+          <p className="text-[11px] font-extrabold text-emerald-700 text-right uppercase tracking-wider">
+            — Proverbs 3:9-10
           </p>
         </div>
       </div>

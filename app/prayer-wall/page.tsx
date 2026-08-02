@@ -28,7 +28,6 @@ export default function PrayerWallPage() {
     r => r.is_confidential_to_pastors || r.status === 'under_pastoral_care'
   ).length;
 
-  // Filter by role, status tab, and category
   const visibleRequests = prayerRequests
     .filter(req => {
       if (req.is_confidential_to_pastors && !isPastorOrAdmin) return false;
@@ -37,7 +36,6 @@ export default function PrayerWallPage() {
       if (categoryFilter !== 'All') return req.category === categoryFilter;
       return true;
     })
-    // Sort: urgent first, then by date
     .sort((a, b) => {
       if (a.is_urgent && !b.is_urgent) return -1;
       if (!a.is_urgent && b.is_urgent) return 1;
@@ -50,28 +48,33 @@ export default function PrayerWallPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Header Banner */}
-      <div className="glass-panel p-5 sm:p-6 rounded-3xl border border-slate-200 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-950 text-white relative overflow-hidden shadow-xl">
+      {/* High-Contrast Welcome & Scripture Banner */}
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-indigo-200 bg-indigo-50/80 shadow-md space-y-3 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-xs font-bold">
+              <span className="px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-xs font-bold">
                 Intercession & Praise
               </span>
-              <span className="text-xs text-indigo-200">|</span>
-              <span className="text-xs text-indigo-200 font-medium">Fountain Gate Chapel</span>
+              <span className="text-xs text-slate-400">|</span>
+              <span className="text-xs text-slate-600 font-semibold">Fountain Gate Chapel</span>
             </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Community Prayer Wall & Testimonies
             </h1>
-            <p className="text-xs sm:text-sm text-indigo-100 mt-1 max-w-2xl">
-              Post prayer requests, stand in intercession with brothers and sisters, and celebrate praise testimonies of God's faithfulness.
-            </p>
+            <div className="p-3.5 rounded-2xl bg-white border border-indigo-100 shadow-xs mt-2">
+              <p className="text-xs sm:text-sm font-semibold text-slate-800 italic leading-relaxed">
+                "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God."
+              </p>
+              <p className="text-[11px] font-extrabold text-indigo-700 text-right uppercase tracking-wider mt-0.5">
+                — Philippians 4:6
+              </p>
+            </div>
           </div>
 
           <button
             onClick={() => setShowSubmitModal(true)}
-            className="px-5 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs shadow-md transition self-start lg:self-auto"
+            className="px-5 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs shadow-md transition self-start lg:self-auto shrink-0"
           >
             + Submit Prayer Request
           </button>
