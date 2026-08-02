@@ -5,6 +5,7 @@ import { MetricsOverview } from '../components/dashboard/MetricsOverview';
 import { AttendanceChart } from '../components/dashboard/AttendanceChart';
 import { FinancialBreakdownChart } from '../components/dashboard/FinancialBreakdownChart';
 import { AtRiskInterventionSummary } from '../components/dashboard/AtRiskInterventionSummary';
+import { MemberDashboard } from '../components/dashboard/MemberDashboard';
 import { RapidCheckInModal } from '../components/care/RapidCheckInModal';
 import { AddMemberModal } from '../components/members/AddMemberModal';
 import { useChurch } from '../lib/context/ChurchContext';
@@ -15,6 +16,12 @@ export default function DashboardPage() {
   const [showAddMember, setShowAddMember] = useState(false);
 
   const isAdmin = currentRole === 'admin';
+  const isMember = currentRole === 'member';
+
+  // Render tailored Member Portal for member role
+  if (isMember) {
+    return <MemberDashboard />;
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-8">
