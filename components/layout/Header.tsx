@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useChurch } from '../../lib/context/ChurchContext';
 import { RoleBadge } from './RoleBadge';
-import { LanguageSwitcher } from './LanguageSwitcher';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -53,7 +52,7 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Side: Live Indicator, Language, Role Badge & Controls */}
+        {/* Right Side: Live Indicator, Role Badge & Controls */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Live Alert Banner */}
           {isLive && (
@@ -70,9 +69,6 @@ export const Header: React.FC = () => {
           >
             <span>Kiosk</span>
           </a>
-
-          {/* Language Switcher */}
-          <LanguageSwitcher />
 
           {/* Role Badge */}
           <RoleBadge />

@@ -2,10 +2,9 @@
 
 import React, { useState } from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
-import { Language, LANGUAGE_LABELS } from '../../lib/translations';
 
 export const UserProfileSettings: React.FC = () => {
-  const { currentUser, currentLanguage, setCurrentLanguage } = useChurch();
+  const { currentUser } = useChurch();
 
   const [fullName, setFullName] = useState(currentUser?.full_name || 'Rev. Eastwood Anaba');
   const [phone, setPhone] = useState(currentUser?.phone || '+233244000111');
@@ -14,8 +13,7 @@ export const UserProfileSettings: React.FC = () => {
 
   const [notifications, setNotifications] = useState({
     whatsappCareAlerts: true,
-    smsGivingReceipts: true,
-    kioskCheckinSound: true
+    smsGivingReceipts: true
   });
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -80,31 +78,6 @@ export const UserProfileSettings: React.FC = () => {
             </button>
           </div>
         </form>
-      </div>
-
-      {/* Language Preference Card */}
-      <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3 bg-white">
-        <h4 className="font-display font-bold text-base text-slate-900">Interface Language Preference</h4>
-        <p className="text-xs text-slate-500">Select default language for CMS interfaces and Kiosk</p>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2">
-          {(Object.keys(LANGUAGE_LABELS) as Language[]).map(langKey => (
-            <button
-              key={langKey}
-              onClick={() => setCurrentLanguage(langKey)}
-              className={`p-3 rounded-xl border text-left font-bold text-xs transition ${
-                langKey === currentLanguage
-                  ? 'bg-indigo-50 text-indigo-700 border-indigo-300 shadow-sm'
-                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span>{LANGUAGE_LABELS[langKey].label}</span>
-                {langKey === currentLanguage && <span className="text-indigo-600">✓</span>}
-              </div>
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Notifications Card */}

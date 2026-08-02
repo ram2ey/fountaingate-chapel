@@ -14,8 +14,6 @@ import {
   AuditLog
 } from '../types/church';
 
-import { Language, TranslationDictionary, TRANSLATIONS } from '../translations';
-
 import { 
   INITIAL_SYSTEM_USERS,
   INITIAL_MEMBERS, 
@@ -61,9 +59,6 @@ interface ChurchContextType {
   setIsLive: (isLive: boolean) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  currentLanguage: Language;
-  setCurrentLanguage: (lang: Language) => void;
-  t: TranslationDictionary;
 }
 
 const ChurchContext = createContext<ChurchContextType | undefined>(undefined);
@@ -85,7 +80,6 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [pendingOfflineCount, setPendingOfflineCount] = useState(0);
   const [isLive, setIsLive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
 
   // Network Status
   useEffect(() => {
@@ -306,8 +300,6 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setGuestRetention(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
   };
 
-  const t = TRANSLATIONS[currentLanguage] || TRANSLATIONS.en;
-
   return (
     <ChurchContext.Provider value={{
       currentUser,
@@ -342,10 +334,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       isLive,
       setIsLive,
       searchQuery,
-      setSearchQuery,
-      currentLanguage,
-      setCurrentLanguage,
-      t
+      setSearchQuery
     }}>
       {children}
     </ChurchContext.Provider>
