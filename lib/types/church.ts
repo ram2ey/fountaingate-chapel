@@ -138,6 +138,20 @@ export type PrayerStatus =
   | 'under_pastoral_care'
   | 'answered_testimony';
 
+export interface PrayerComment {
+  id: string;
+  author_name: string;
+  text: string;
+  created_at: string;
+}
+
+export interface PrayerUpdate {
+  id: string;
+  author_name: string;
+  text: string;
+  created_at: string;
+}
+
 export interface PrayerRequest {
   id: string;
   requester_name: string;
@@ -147,7 +161,11 @@ export interface PrayerRequest {
   category: PrayerCategory;
   is_anonymous: boolean;
   is_confidential_to_pastors: boolean;
+  is_urgent: boolean;
+  scripture_reference?: string;
   status: PrayerStatus;
   prayed_count: number;
+  comments: PrayerComment[];
+  updates: PrayerUpdate[];
   created_at: string;
 }

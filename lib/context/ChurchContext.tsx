@@ -13,6 +13,8 @@ import {
   SystemUser,
   AuditLog,
   PrayerRequest,
+  PrayerComment,
+  PrayerUpdate,
   PrayerStatus
 } from '../types/church';
 
@@ -56,10 +58,12 @@ interface ChurchContextType {
   auditLogs: AuditLog[];
   addAuditLog: (action: string, details: string) => void;
   prayerRequests: PrayerRequest[];
-  addPrayerRequest: (request: Omit<PrayerRequest, 'id' | 'status' | 'prayed_count' | 'created_at'>) => void;
+  addPrayerRequest: (request: Omit<PrayerRequest, 'id' | 'status' | 'prayed_count' | 'created_at' | 'comments' | 'updates'>) => void;
   incrementPrayerCount: (id: string) => void;
   updatePrayerStatus: (id: string, status: PrayerStatus) => void;
   deletePrayerRequest: (id: string) => void;
+  addPrayerComment: (requestId: string, text: string, authorName: string) => void;
+  addPrayerUpdate: (requestId: string, text: string, authorName: string) => void;
   pendingOfflineCount: number;
   syncOfflineCheckIns: () => void;
   isOnline: boolean;
@@ -309,12 +313,14 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setGuestRetention(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
   };
 
-  const addPrayerRequest = (newRequest: Omit<PrayerRequest, 'id' | 'status' | 'prayed_count' | 'created_at'>) => {
+  const addPrayerRequest = (newRequest: Omit<PrayerRequest, 'id' | 'status' | 'prayed_count' | 'created_at' | 'comments' | 'updates'>) => {
     const request: PrayerRequest = {
       ...newRequest,
       id: `pr-${Date.now()}`,
       status: 'active',
       prayed_count: 1,
+      comments: [],
+      updates: [],
       created_at: new Date().toISOString().split('T')[0]
     };
     setPrayerRequests(prev => [request, ...prev]);
@@ -333,6 +339,30 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const deletePrayerRequest = (id: string) => {
     setPrayerRequests(prev => prev.filter(p => p.id !== id));
     addAuditLog('DELETE_PRAYER', `Deleted prayer request`);
+  };
+
+  const addPrayerComment = (requestId: string, text: string, authorName: string) => {
+    const comment: PrayerComment = {
+      id: `cmt-${Date.now()}`,
+      author_name: authorName,
+      text,
+      created_at: new Date().toISOString().split('T')[0]
+    };
+    setPrayerRequests(prev => prev.map(p =>
+      p.id === requestId ? { ...p, comments: [...p.comments, comment] } : p
+    ));
+  };
+
+  const addPrayerUpdate = (requestId: string, text: string, authorName: string) => {
+    const update: PrayerUpdate = {
+      id: `upd-${Date.now()}`,
+      author_name: authorName,
+      text,
+      created_at: new Date().toISOString().split('T')[0]
+    };
+    setPrayerRequests(prev => prev.map(p =>
+      p.id === requestId ? { ...p, updates: [...p.updates, update] } : p
+    ));
   };
 
   return (
@@ -368,6 +398,8 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       incrementPrayerCount,
       updatePrayerStatus,
       deletePrayerRequest,
+      addPrayerComment,
+      addPrayerUpdate,
       pendingOfflineCount,
       syncOfflineCheckIns,
       isOnline,

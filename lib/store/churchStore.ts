@@ -225,12 +225,18 @@ export const INITIAL_PRAYER_REQUESTS: PrayerRequest[] = [
     requester_name: 'Sister Grace Mensah',
     requester_phone: '+233501987654',
     title: 'Divine Healing & Strength for Mother',
-    details: 'Standing in faith for total restoration of my mother’s health following medical diagnosis in Accra. Believing God for supernatural healing!',
+    details: "Standing in faith for total restoration of my mother's health following medical diagnosis in Accra. Believing God for supernatural healing!",
     category: 'Healing & Health',
     is_anonymous: false,
     is_confidential_to_pastors: false,
+    is_urgent: true,
+    scripture_reference: 'Psalm 103:3',
     status: 'active',
     prayed_count: 48,
+    comments: [
+      { id: 'c1', author_name: 'Samuel Adjei', text: '🙏 Standing with you in prayer, sister. God heals!', created_at: '2026-07-29' }
+    ],
+    updates: [],
     created_at: '2026-07-28'
   },
   {
@@ -238,12 +244,18 @@ export const INITIAL_PRAYER_REQUESTS: PrayerRequest[] = [
     requester_name: 'Anonymous Brother',
     requester_phone: '+233244123456',
     title: 'Financial Breakthrough & Business Contract',
-    details: 'Praying for God’s favor upon my pending contract bid in Bolgatanga. Trusting God for kingdom prosperity to support church building project.',
+    details: "Praying for God's favor upon my pending contract bid in Bolgatanga. Trusting God for kingdom prosperity to support church building project.",
     category: 'Financial Breakthrough',
     is_anonymous: true,
     is_confidential_to_pastors: false,
+    is_urgent: false,
+    scripture_reference: 'Deuteronomy 8:18',
     status: 'active',
     prayed_count: 32,
+    comments: [],
+    updates: [
+      { id: 'u1', author_name: 'Anonymous Brother', text: 'Praise update: Meeting was rescheduled and went very well today!', created_at: '2026-07-31' }
+    ],
     created_at: '2026-07-29'
   },
   {
@@ -255,8 +267,15 @@ export const INITIAL_PRAYER_REQUESTS: PrayerRequest[] = [
     category: 'General Intercession',
     is_anonymous: false,
     is_confidential_to_pastors: false,
+    is_urgent: false,
+    scripture_reference: undefined,
     status: 'answered_testimony',
     prayed_count: 85,
+    comments: [
+      { id: 'c2', author_name: 'Kwaku Osei', text: '🎉 To God be the glory! This is amazing news!', created_at: '2026-07-26' },
+      { id: 'c3', author_name: 'Pastor Kwame Boateng', text: 'This is a mighty testimony! God is faithful forever.', created_at: '2026-07-26' }
+    ],
+    updates: [],
     created_at: '2026-07-25'
   },
   {
@@ -268,8 +287,12 @@ export const INITIAL_PRAYER_REQUESTS: PrayerRequest[] = [
     category: 'Family & Marriage',
     is_anonymous: false,
     is_confidential_to_pastors: true,
+    is_urgent: false,
+    scripture_reference: 'Ephesians 4:3',
     status: 'under_pastoral_care',
     prayed_count: 12,
+    comments: [],
+    updates: [],
     created_at: '2026-07-30'
   }
 ];

@@ -16,6 +16,8 @@ export const SubmitPrayerModal: React.FC<Props> = ({ onClose }) => {
   const [category, setCategory] = useState<PrayerCategory>('Healing & Health');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isConfidentialToPastors, setIsConfidentialToPastors] = useState(false);
+  const [isUrgent, setIsUrgent] = useState(false);
+  const [scriptureRef, setScriptureRef] = useState('');
   const [requesterName, setRequesterName] = useState(currentUser?.full_name || '');
   const [requesterPhone, setRequesterPhone] = useState(currentUser?.phone || '');
 
@@ -30,7 +32,9 @@ export const SubmitPrayerModal: React.FC<Props> = ({ onClose }) => {
       details,
       category,
       is_anonymous: isAnonymous,
-      is_confidential_to_pastors: isConfidentialToPastors
+      is_confidential_to_pastors: isConfidentialToPastors,
+      is_urgent: isUrgent,
+      scripture_reference: scriptureRef.trim() || undefined,
     });
 
     onClose();
@@ -50,6 +54,20 @@ export const SubmitPrayerModal: React.FC<Props> = ({ onClose }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          {/* Urgency Toggle (Top Prominent) */}
+          <label className="flex items-center justify-between p-3 rounded-2xl bg-rose-50 border border-rose-200 cursor-pointer">
+            <div>
+              <p className="font-bold text-rose-900">🔴 Mark as Urgent Prayer Need</p>
+              <p className="text-[10px] text-rose-700">Urgent requests are pinned to the top of the Prayer Wall</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={isUrgent}
+              onChange={(e) => setIsUrgent(e.target.checked)}
+              className="w-4 h-4 rounded accent-rose-600"
+            />
+          </label>
+
           <div>
             <label className="block text-slate-700 font-bold mb-1">Prayer Title *</label>
             <input
@@ -87,6 +105,17 @@ export const SubmitPrayerModal: React.FC<Props> = ({ onClose }) => {
               onChange={(e) => setDetails(e.target.value)}
               placeholder="Share details of what you are trusting God for..."
               className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-900 focus:outline-none focus:border-indigo-600 focus:bg-white resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-slate-700 font-bold mb-1">Supporting Scripture Verse (Optional)</label>
+            <input
+              type="text"
+              value={scriptureRef}
+              onChange={(e) => setScriptureRef(e.target.value)}
+              placeholder="e.g. Psalm 103:3, Philippians 4:6, Isaiah 53:5"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 focus:outline-none focus:border-indigo-600 focus:bg-white"
             />
           </div>
 

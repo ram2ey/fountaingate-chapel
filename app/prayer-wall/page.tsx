@@ -4,34 +4,49 @@ import React, { useState } from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
 import { PrayerCard } from '../../components/prayer/PrayerCard';
 import { SubmitPrayerModal } from '../../components/prayer/SubmitPrayerModal';
+import { PrayerCategory } from '../../lib/types/church';
+
+const CATEGORIES: (PrayerCategory | 'All')[] = [
+  'All',
+  'Healing & Health',
+  'Financial Breakthrough',
+  'Family & Marriage',
+  'Salvation & Spiritual Growth',
+  'Career & Business',
+  'General Intercession'
+];
 
 export default function PrayerWallPage() {
   const { prayerRequests, currentRole } = useChurch();
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [filterTab, setFilterTab] = useState<'all' | 'testimonies' | 'pastoral'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<PrayerCategory | 'All'>('All');
 
   const isPastorOrAdmin = currentRole === 'admin' || currentRole === 'pastor';
 
-  // Filter requests based on user role and selected tab
-  const visibleRequests = prayerRequests.filter(req => {
-    // Hide confidential-to-pastors requests from regular members
-    if (req.is_confidential_to_pastors && !isPastorOrAdmin) {
-      return false;
-    }
+  const pastoralQueueCount = prayerRequests.filter(
+    r => r.is_confidential_to_pastors || r.status === 'under_pastoral_care'
+  ).length;
 
-    if (filterTab === 'testimonies') {
-      return req.status === 'answered_testimony';
-    }
-
-    if (filterTab === 'pastoral') {
-      return req.is_confidential_to_pastors || req.status === 'under_pastoral_care';
-    }
-
-    return true;
-  });
+  // Filter by role, status tab, and category
+  const visibleRequests = prayerRequests
+    .filter(req => {
+      if (req.is_confidential_to_pastors && !isPastorOrAdmin) return false;
+      if (filterTab === 'testimonies') return req.status === 'answered_testimony';
+      if (filterTab === 'pastoral') return req.is_confidential_to_pastors || req.status === 'under_pastoral_care';
+      if (categoryFilter !== 'All') return req.category === categoryFilter;
+      return true;
+    })
+    // Sort: urgent first, then by date
+    .sort((a, b) => {
+      if (a.is_urgent && !b.is_urgent) return -1;
+      if (!a.is_urgent && b.is_urgent) return 1;
+      return b.created_at.localeCompare(a.created_at);
+    });
 
   const totalPrayersOffered = prayerRequests.reduce((sum, req) => sum + req.prayed_count, 0);
   const totalTestimonies = prayerRequests.filter(r => r.status === 'answered_testimony').length;
+  const urgentCount = prayerRequests.filter(r => r.is_urgent && r.status === 'active').length;
 
   return (
     <div className="space-y-6 pb-8">
@@ -50,7 +65,7 @@ export default function PrayerWallPage() {
               Community Prayer Wall & Testimonies
             </h1>
             <p className="text-xs sm:text-sm text-indigo-100 mt-1 max-w-2xl">
-              Post prayer requests, stand in intercession with brothers and sisters, and celebrate praise testimonies of God’s faithfulness.
+              Post prayer requests, stand in intercession with brothers and sisters, and celebrate praise testimonies of God's faithfulness.
             </p>
           </div>
 
@@ -64,30 +79,33 @@ export default function PrayerWallPage() {
       </div>
 
       {/* Analytics Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1">
-          <p className="text-slate-500 font-bold uppercase text-[10px]">Active Prayer Requests</p>
+          <p className="text-slate-500 font-bold uppercase text-[10px]">Active Requests</p>
           <p className="font-display font-extrabold text-2xl text-indigo-600">
             {prayerRequests.filter(r => r.status === 'active').length}
           </p>
         </div>
 
+        {urgentCount > 0 && (
+          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 shadow-sm space-y-1">
+            <p className="text-rose-600 font-bold uppercase text-[10px]">🔴 Urgent Needs</p>
+            <p className="font-display font-extrabold text-2xl text-rose-600 animate-pulse">{urgentCount}</p>
+          </div>
+        )}
+
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1">
           <p className="text-slate-500 font-bold uppercase text-[10px]">Praise Testimonies</p>
-          <p className="font-display font-extrabold text-2xl text-emerald-600">
-            {totalTestimonies}
-          </p>
+          <p className="font-display font-extrabold text-2xl text-emerald-600">{totalTestimonies}</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1">
-          <p className="text-slate-500 font-bold uppercase text-[10px]">Total Intercessions Offered</p>
-          <p className="font-display font-extrabold text-2xl text-amber-600">
-            {totalPrayersOffered} 🙏
-          </p>
+          <p className="text-slate-500 font-bold uppercase text-[10px]">Total Intercessions</p>
+          <p className="font-display font-extrabold text-2xl text-amber-600">{totalPrayersOffered} 🙏</p>
         </div>
       </div>
 
-      {/* Tab Controls */}
+      {/* Status Tab Controls */}
       <div className="flex bg-slate-200/80 p-1 rounded-2xl border border-slate-300 max-w-md">
         <button
           onClick={() => setFilterTab('all')}
@@ -95,7 +113,7 @@ export default function PrayerWallPage() {
             filterTab === 'all' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          All Requests ({visibleRequests.length})
+          All ({prayerRequests.filter(r => !r.is_confidential_to_pastors || isPastorOrAdmin).length})
         </button>
 
         <button
@@ -104,20 +122,45 @@ export default function PrayerWallPage() {
             filterTab === 'testimonies' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          Praise Testimonies ({totalTestimonies})
+          Testimonies ({totalTestimonies})
         </button>
 
         {isPastorOrAdmin && (
           <button
             onClick={() => setFilterTab('pastoral')}
-            className={`flex-1 py-2 rounded-xl font-bold text-xs transition ${
+            className={`flex-1 py-2 rounded-xl font-bold text-xs transition relative ${
               filterTab === 'pastoral' ? 'bg-white text-amber-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             Pastoral Queue
+            {pastoralQueueCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
+                {pastoralQueueCount}
+              </span>
+            )}
           </button>
         )}
       </div>
+
+      {/* Category Filter Pills (visible on All tab) */}
+      {filterTab === 'all' && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+          <span className="text-[10px] font-bold uppercase text-slate-400 shrink-0">Filter:</span>
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCategoryFilter(cat)}
+              className={`px-3 py-1 rounded-xl font-bold whitespace-nowrap transition border text-xs ${
+                categoryFilter === cat
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Prayer Feed */}
       <div className="space-y-4">
