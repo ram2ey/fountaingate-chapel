@@ -14,10 +14,13 @@ export default function LoginPage() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
-  // Register State
+  // Complete Register State
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [regPhone, setRegPhone] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regDob, setRegDob] = useState('');
+  const [regAddress, setRegAddress] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [cellGroup, setCellGroup] = useState('Victory Cell');
 
@@ -45,11 +48,14 @@ export default function LoginPage() {
       return;
     }
 
-    // Register new member in church context
+    // Register complete new member in church context
     addMember({
       first_name: firstName,
       last_name: lastName,
       phone: regPhone,
+      email: regEmail || undefined,
+      dob: regDob || undefined,
+      address: regAddress || undefined,
       cell_group: cellGroup,
       status: 'active',
       tags: ['Registered Member']
@@ -180,17 +186,50 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-slate-700 font-bold mb-1">Select Cell Group</label>
-              <select
-                value={cellGroup}
-                onChange={(e) => setCellGroup(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-bold focus:outline-none focus:border-indigo-600"
-              >
-                <option value="Zion Warriors Cell">Zion Warriors Cell</option>
-                <option value="Grace & Truth Cell">Grace & Truth Cell</option>
-                <option value="Anointing & Power Cell">Anointing & Power Cell</option>
-                <option value="Shalom Family Cell">Shalom Family Cell</option>
-              </select>
+              <label className="block text-slate-700 font-bold mb-1">Email Address (Optional)</label>
+              <input
+                type="email"
+                value={regEmail}
+                onChange={(e) => setRegEmail(e.target.value)}
+                placeholder="samuel@gmail.com"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-medium focus:outline-none focus:border-indigo-600 focus:bg-white"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Date of Birth (Optional)</label>
+                <input
+                  type="date"
+                  value={regDob}
+                  onChange={(e) => setRegDob(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-medium focus:outline-none focus:border-indigo-600"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Select Cell Group</label>
+                <select
+                  value={cellGroup}
+                  onChange={(e) => setCellGroup(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-bold focus:outline-none focus:border-indigo-600"
+                >
+                  <option value="Zion Warriors Cell">Zion Warriors Cell</option>
+                  <option value="Grace & Truth Cell">Grace & Truth Cell</option>
+                  <option value="Anointing & Power Cell">Anointing & Power Cell</option>
+                  <option value="Shalom Family Cell">Shalom Family Cell</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">Residential Address / City (Optional)</label>
+              <input
+                type="text"
+                value={regAddress}
+                onChange={(e) => setRegAddress(e.target.value)}
+                placeholder="e.g. East Legon, Accra"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-medium focus:outline-none focus:border-indigo-600 focus:bg-white"
+              />
             </div>
 
             <div>
