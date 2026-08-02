@@ -15,7 +15,8 @@ import {
   PrayerRequest,
   PrayerComment,
   PrayerUpdate,
-  PrayerStatus
+  PrayerStatus,
+  PastoralDocument
 } from '../types/church';
 
 import { 
@@ -27,7 +28,8 @@ import {
   INITIAL_BROADCASTS,
   INITIAL_GUEST_RETENTION,
   INITIAL_AUDIT_LOGS,
-  INITIAL_PRAYER_REQUESTS
+  INITIAL_PRAYER_REQUESTS,
+  INITIAL_PASTORAL_DOCUMENTS
 } from '../store/churchStore';
 
 interface ChurchContextType {
@@ -65,6 +67,10 @@ interface ChurchContextType {
   deletePrayerRequest: (id: string) => void;
   addPrayerComment: (requestId: string, text: string, authorName: string) => void;
   addPrayerUpdate: (requestId: string, text: string, authorName: string) => void;
+  pastoralDocuments: PastoralDocument[];
+  addPastoralDocument: (doc: Omit<PastoralDocument, 'id' | 'created_at' | 'last_edited_at' | 'active_editors'>) => void;
+  updatePastoralDocument: (id: string, updates: Partial<PastoralDocument>) => void;
+  deletePastoralDocument: (id: string) => void;
   pendingOfflineCount: number;
   syncOfflineCheckIns: () => void;
   isOnline: boolean;
@@ -89,6 +95,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [guestRetention, setGuestRetention] = useState<GuestRetentionItem[]>(INITIAL_GUEST_RETENTION);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
   const [prayerRequests, setPrayerRequests] = useState<PrayerRequest[]>(INITIAL_PRAYER_REQUESTS);
+  const [pastoralDocuments, setPastoralDocuments] = useState<PastoralDocument[]>(INITIAL_PASTORAL_DOCUMENTS);
 
   const [isOnline, setIsOnline] = useState(true);
   const [pendingOfflineCount, setPendingOfflineCount] = useState(0);
@@ -386,6 +393,29 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     ));
   };
 
+  const addPastoralDocument = (newDoc: Omit<PastoralDocument, 'id' | 'created_at' | 'last_edited_at' | 'active_editors'>) => {
+    const doc: PastoralDocument = {
+      ...newDoc,
+      id: `doc-${Date.now()}`,
+      active_editors: [newDoc.created_by_name],
+      last_edited_at: 'Just now',
+      created_at: new Date().toISOString().split('T')[0]
+    };
+    setPastoralDocuments(prev => [doc, ...prev]);
+    addAuditLog('CREATE_DOCUMENT', `Created pastoral document "${doc.title}"`);
+  };
+
+  const updatePastoralDocument = (id: string, updates: Partial<PastoralDocument>) => {
+    setPastoralDocuments(prev => prev.map(d =>
+      d.id === id ? { ...d, ...updates, last_edited_at: 'Just now' } : d
+    ));
+  };
+
+  const deletePastoralDocument = (id: string) => {
+    setPastoralDocuments(prev => prev.filter(d => d.id !== id));
+    addAuditLog('DELETE_DOCUMENT', `Deleted pastoral document`);
+  };
+
   return (
     <ChurchContext.Provider value={{
       currentUser,
@@ -422,6 +452,10 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       deletePrayerRequest,
       addPrayerComment,
       addPrayerUpdate,
+      pastoralDocuments,
+      addPastoralDocument,
+      updatePastoralDocument,
+      deletePastoralDocument,
       pendingOfflineCount,
       syncOfflineCheckIns,
       isOnline,

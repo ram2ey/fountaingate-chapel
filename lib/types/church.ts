@@ -169,3 +169,21 @@ export interface PrayerRequest {
   updates: PrayerUpdate[];
   created_at: string;
 }
+
+export type DocumentCategory = 
+  | 'Sermon Outline'
+  | 'Sunday Service Order'
+  | 'Pastoral Meeting Agenda'
+  | 'Counseling Action Plan';
+
+export interface PastoralDocument {
+  id: string;
+  title: string;
+  category: DocumentCategory;
+  content: string;
+  created_by_name: string;
+  last_edited_by_name: string;
+  active_editors: string[];
+  last_edited_at: string;
+  created_at: string;
+}

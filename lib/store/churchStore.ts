@@ -7,7 +7,8 @@ import {
   GuestRetentionItem,
   SystemUser,
   AuditLog,
-  PrayerRequest
+  PrayerRequest,
+  PastoralDocument
 } from '../types/church';
 
 export const INITIAL_SYSTEM_USERS: SystemUser[] = [
@@ -296,3 +297,48 @@ export const INITIAL_PRAYER_REQUESTS: PrayerRequest[] = [
     created_at: '2026-07-30'
   }
 ];
+
+export const INITIAL_PASTORAL_DOCUMENTS: PastoralDocument[] = [
+  {
+    id: 'doc1',
+    title: 'Sunday Service Anointing Run of Show',
+    category: 'Sunday Service Order',
+    content: `FOUNTAIN GATE CHAPEL — SUNDAY SERVICE RUN OF SHOW
+Date: August 3, 2026
+
+08:30 AM — Opening Prayer & Intercession (Deacon Samuel)
+08:45 AM — Praise & Worship (FGC Choir & Band)
+09:15 AM — Pastoral Welcome & Sanctuary Announcements (Pastor Kwame)
+09:30 AM — Anointing Sermon Message (Rev. Eastwood Anaba)
+10:30 AM — Altar Call, Healing Intercession & Tithe Offering
+11:00 AM — Benediction & Guest Reception`,
+    created_by_name: 'Rev. Eastwood Anaba',
+    last_edited_by_name: 'Pastor Kwame Boateng',
+    active_editors: ['Rev. Eastwood Anaba', 'Pastor Kwame Boateng'],
+    last_edited_at: '2026-08-01 10:45 AM',
+    created_at: '2026-08-01'
+  },
+  {
+    id: 'doc2',
+    title: 'Kingdom Dominance Series — Part 4 Sermon Outline',
+    category: 'Sermon Outline',
+    content: `SERMON TITLE: The Anointing for Breakthrough & Domain Expansion
+SPEAKER: Rev. Eastwood Anaba
+KEY TEXT: Isaiah 61:1-3, Luke 4:18-19
+
+MAIN POINTS:
+1. The Purpose of the Anointing: To break yokes and open doors.
+2. Walking in Dominion: Operating by faith and not by sight.
+3. Financial & Spiritual Stewardship in the End Times.
+
+EXPOSITION NOTES:
+- Emphasize divine acceleration for church brethren in business.
+- Conclude with altar call for those trusting God for job breakthroughs.`,
+    created_by_name: 'Rev. Eastwood Anaba',
+    last_edited_by_name: 'Rev. Eastwood Anaba',
+    active_editors: ['Rev. Eastwood Anaba'],
+    last_edited_at: '2026-08-01 04:20 PM',
+    created_at: '2026-07-31'
+  }
+];
+
