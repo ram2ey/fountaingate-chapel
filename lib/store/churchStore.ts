@@ -301,44 +301,118 @@ export const INITIAL_PRAYER_REQUESTS: PrayerRequest[] = [
 export const INITIAL_PASTORAL_DOCUMENTS: PastoralDocument[] = [
   {
     id: 'doc1',
-    title: 'Sunday Service Anointing Run of Show',
+    title: 'Kingdom Dominance Series — Part 4 Presentation Deck.pptx',
+    category: 'Sermon Outline',
+    file_type: 'pptx',
+    file_size: '4.8 MB',
+    download_url: '/documents/sermon_slides_part4.pptx',
+    content: 'Full 6-slide projection deck for Rev. Eastwood Anaba\'s Sunday message on Kingdom Dominance.',
+    slides: [
+      {
+        slide_number: 1,
+        title: 'Kingdom Dominance Series',
+        body: 'Part 4: The Anointing for Breakthrough & Domain Expansion\nRev. Eastwood Anaba • Fountain Gate Chapel',
+        scripture: 'Isaiah 61:1-3'
+      },
+      {
+        slide_number: 2,
+        title: 'Key Scripture Text',
+        body: '"The Spirit of the Sovereign LORD is on me, because the LORD has anointed me to proclaim good news to the poor. He has sent me to bind up the brokenhearted..."',
+        scripture: 'Isaiah 61:1'
+      },
+      {
+        slide_number: 3,
+        title: 'Point 1: The Purpose of the Anointing',
+        body: '• The Anointing breaks yokes and removes barriers.\n• Anointing empowers believers for dominion in their careers, business, and family.',
+        scripture: 'Luke 4:18-19'
+      },
+      {
+        slide_number: 4,
+        title: 'Point 2: Walking in Unshakeable Faith',
+        body: '• Faith requires action and confession.\n• Operating by faith and not by sight in difficult times.',
+        scripture: 'Hebrews 11:1-6'
+      },
+      {
+        slide_number: 5,
+        title: 'Point 3: Kingdom Prosperity & Covenant Giving',
+        body: '• Financial stewardship supports global missions and sanctuary expansion.\n• Divine multiplication upon faithful tithers.',
+        scripture: 'Deuteronomy 8:18'
+      },
+      {
+        slide_number: 6,
+        title: 'Altar Call & Intercession',
+        body: '• Praying for total restoration of health, business breakthroughs, and family peace.\n• Stand in faith with Fountain Gate Chapel!',
+        scripture: 'Philippians 4:19'
+      }
+    ],
+    created_by_name: 'Rev. Eastwood Anaba',
+    last_edited_by_name: 'Rev. Eastwood Anaba',
+    last_edited_at: '2026-08-01 04:20 PM',
+    created_at: '2026-07-31'
+  },
+  {
+    id: 'doc2',
+    title: 'Sunday Sanctuary Service Liturgy & Run of Show.docx',
     category: 'Sunday Service Order',
-    content: `FOUNTAIN GATE CHAPEL — SUNDAY SERVICE RUN OF SHOW
+    file_type: 'docx',
+    file_size: '1.2 MB',
+    download_url: '/documents/sunday_liturgy.docx',
+    content: `FOUNTAIN GATE CHAPEL — SANCTUARY SERVICE ORDER & LITURGY SCRIPT
 Date: August 3, 2026
 
-08:30 AM — Opening Prayer & Intercession (Deacon Samuel)
-08:45 AM — Praise & Worship (FGC Choir & Band)
-09:15 AM — Pastoral Welcome & Sanctuary Announcements (Pastor Kwame)
-09:30 AM — Anointing Sermon Message (Rev. Eastwood Anaba)
-10:30 AM — Altar Call, Healing Intercession & Tithe Offering
-11:00 AM — Benediction & Guest Reception`,
+I. OPENING PRAYER & INTERCESSION (08:30 AM – 08:45 AM)
+- Intercessory Lead: Deacon Samuel Adjei
+- Target Prayer: Sanctuary spiritual atmosphere, visitors, and country.
+
+II. PRAISE & WORSHIP FELLOWSHIP (08:45 AM – 09:15 AM)
+- Worship Leader: FGC Sanctuary Choir
+- Songs: "Ohene Kese", "You Are Mighty", "Anointing Fall On Me"
+
+III. WELCOME & SANCTUARY ANNOUNCEMENTS (09:15 AM – 09:30 AM)
+- Officiating Minister: Pastor Kwame Boateng
+- Welcome first-time guests & QR Code Intake Card.
+
+IV. SERMON & ANOINTING EXPOSITION (09:30 AM – 10:30 AM)
+- Preacher: Rev. Eastwood Anaba
+- Theme: Kingdom Dominance & Supernatural Provision
+
+V. TITHE OFFERING & ALTAR PRAYERS (10:30 AM – 11:00 AM)
+- Online MoMo & Card Check-in via FGC Portal
+
+VI. BENEDICTION & RECEPTION
+- Dismissal prayer & Pastoral team guest greeting in foyer.`,
     created_by_name: 'Rev. Eastwood Anaba',
     last_edited_by_name: 'Pastor Kwame Boateng',
-    active_editors: ['Rev. Eastwood Anaba', 'Pastor Kwame Boateng'],
     last_edited_at: '2026-08-01 10:45 AM',
     created_at: '2026-08-01'
   },
   {
-    id: 'doc2',
-    title: 'Kingdom Dominance Series — Part 4 Sermon Outline',
-    category: 'Sermon Outline',
-    content: `SERMON TITLE: The Anointing for Breakthrough & Domain Expansion
-SPEAKER: Rev. Eastwood Anaba
-KEY TEXT: Isaiah 61:1-3, Luke 4:18-19
+    id: 'doc3',
+    title: 'Monthly Pastoral Leadership Meeting Minutes.docx',
+    category: 'Pastoral Meeting Agenda',
+    file_type: 'docx',
+    file_size: '850 KB',
+    download_url: '/documents/pastoral_meeting_august.docx',
+    content: `FOUNTAIN GATE CHAPEL — PASTORAL LEADERSHIP MEETING
+Date: July 30, 2026
 
-MAIN POINTS:
-1. The Purpose of the Anointing: To break yokes and open doors.
-2. Walking in Dominion: Operating by faith and not by sight.
-3. Financial & Spiritual Stewardship in the End Times.
+ATTENDEES: Rev. Eastwood Anaba, Pastor Kwame Boateng, Pastoral Board
 
-EXPOSITION NOTES:
-- Emphasize divine acceleration for church brethren in business.
-- Conclude with altar call for those trusting God for job breakthroughs.`,
-    created_by_name: 'Rev. Eastwood Anaba',
+AGENDA ITEMS:
+1. Review of Sanctuary Attendance & At-Risk Follow-up:
+   - 3 members flagged in At-Risk Intervention Queue. Pastor Kwame assigned to WhatsApp outreach.
+2. Online Giving & MoMo Tithe Channel Review:
+   - Positive adoption of Online Giving Portal.
+3. Community Prayer Wall Expansion:
+   - Category filtering & urgent request routing successfully activated.
+
+ACTION ITEMS:
+- Complete quarterly leadership retreat planning by August 15.`,
+    created_by_name: 'Pastor Kwame Boateng',
     last_edited_by_name: 'Rev. Eastwood Anaba',
-    active_editors: ['Rev. Eastwood Anaba'],
-    last_edited_at: '2026-08-01 04:20 PM',
-    created_at: '2026-07-31'
+    last_edited_at: '2026-07-30 02:15 PM',
+    created_at: '2026-07-30'
   }
 ];
+
 

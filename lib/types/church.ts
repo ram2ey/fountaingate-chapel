@@ -176,14 +176,24 @@ export type DocumentCategory =
   | 'Pastoral Meeting Agenda'
   | 'Counseling Action Plan';
 
+export interface SlideItem {
+  slide_number: number;
+  title: string;
+  body: string;
+  scripture?: string;
+}
+
 export interface PastoralDocument {
   id: string;
   title: string;
   category: DocumentCategory;
+  file_type: 'docx' | 'pptx' | 'pdf';
+  file_size: string;
+  download_url: string;
   content: string;
+  slides?: SlideItem[];
   created_by_name: string;
   last_edited_by_name: string;
-  active_editors: string[];
   last_edited_at: string;
   created_at: string;
 }

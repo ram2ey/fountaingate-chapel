@@ -68,7 +68,7 @@ interface ChurchContextType {
   addPrayerComment: (requestId: string, text: string, authorName: string) => void;
   addPrayerUpdate: (requestId: string, text: string, authorName: string) => void;
   pastoralDocuments: PastoralDocument[];
-  addPastoralDocument: (doc: Omit<PastoralDocument, 'id' | 'created_at' | 'last_edited_at' | 'active_editors'>) => void;
+  addPastoralDocument: (doc: Omit<PastoralDocument, 'id' | 'created_at' | 'last_edited_at'>) => void;
   updatePastoralDocument: (id: string, updates: Partial<PastoralDocument>) => void;
   deletePastoralDocument: (id: string) => void;
   pendingOfflineCount: number;
@@ -393,16 +393,15 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     ));
   };
 
-  const addPastoralDocument = (newDoc: Omit<PastoralDocument, 'id' | 'created_at' | 'last_edited_at' | 'active_editors'>) => {
+  const addPastoralDocument = (newDoc: Omit<PastoralDocument, 'id' | 'created_at' | 'last_edited_at'>) => {
     const doc: PastoralDocument = {
       ...newDoc,
       id: `doc-${Date.now()}`,
-      active_editors: [newDoc.created_by_name],
       last_edited_at: 'Just now',
       created_at: new Date().toISOString().split('T')[0]
     };
     setPastoralDocuments(prev => [doc, ...prev]);
-    addAuditLog('CREATE_DOCUMENT', `Created pastoral document "${doc.title}"`);
+    addAuditLog('CREATE_DOCUMENT', `Uploaded pastoral document "${doc.title}" (${doc.file_type.toUpperCase()})`);
   };
 
   const updatePastoralDocument = (id: string, updates: Partial<PastoralDocument>) => {
