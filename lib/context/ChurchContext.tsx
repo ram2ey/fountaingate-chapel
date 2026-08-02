@@ -132,14 +132,25 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setAuditLogs(prev => [newLog, ...prev]);
   };
 
+  const normalizePhone = (phoneStr: string) => {
+    let digits = phoneStr.replace(/[^0-9]/g, '');
+    if (digits.startsWith('0') && digits.length === 10) {
+      digits = '233' + digits.substring(1);
+    }
+    return digits;
+  };
+
   const loginWithPhone = (phone: string, pass: string): boolean => {
-    const cleanInput = phone.replace(/[^0-9]/g, '');
-    const user = systemUsers.find(u => u.phone.replace(/[^0-9]/g, '') === cleanInput);
+    const cleanInput = normalizePhone(phone);
+    const user = systemUsers.find(u => {
+      const uPhone = normalizePhone(u.phone);
+      return uPhone === cleanInput || uPhone.endsWith(cleanInput) || cleanInput.endsWith(uPhone);
+    });
     
     if (user) {
       setCurrentUser(user);
       setCurrentRole(user.role);
-      addAuditLog('LOGIN', `User ${user.full_name} signed in with phone ${phone}`);
+      addAuditLog('LOGIN', `User ${user.full_name} signed in as ${user.role} with phone ${phone}`);
       return true;
     }
 
