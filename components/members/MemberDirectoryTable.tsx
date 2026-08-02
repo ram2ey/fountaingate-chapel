@@ -3,200 +3,148 @@
 import React, { useState } from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
 import { Member } from '../../lib/types/church';
-import { MemberProfileDrawer } from './MemberProfileDrawer';
 
-export const MemberDirectoryTable: React.FC<{ onOpenAddModal: () => void }> = ({ onOpenAddModal }) => {
-  const { members, deleteMember, searchQuery, setSearchQuery, currentRole } = useChurch();
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
-  const [activeDrawerMember, setActiveDrawerMember] = useState<Member | null>(null);
+interface Props {
+  onSelectMember: (member: Member) => void;
+}
+
+export const MemberDirectoryTable: React.FC<Props> = ({ onSelectMember }) => {
+  const { members, currentRole, searchQuery } = useChurch();
+  const [filterCell, setFilterCell] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
 
   const isAdmin = currentRole === 'admin';
 
-  const filteredMembers = members.filter(m => {
-    const matchesSearch = 
-      `${m.first_name} ${m.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.phone.includes(searchQuery) ||
-      m.cell_group.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+  const cellGroups = Array.from(new Set(members.map(m => m.cell_group)));
 
-    const matchesStatus = selectedStatusFilter === 'all' || m.status === selectedStatusFilter;
+  const filteredMembers = members.filter((member) => {
+    const matchesSearch = searchQuery === '' || 
+      `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.phone.includes(searchQuery) ||
+      (member.email && member.email.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    return matchesSearch && matchesStatus;
+    const matchesCell = filterCell === 'all' || member.cell_group === filterCell;
+    const matchesStatus = filterStatus === 'all' || member.status === filterStatus;
+
+    return matchesSearch && matchesCell && matchesStatus;
   });
 
   return (
-    <div className="space-y-4">
+    <div className="glass-panel rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
       {/* Controls Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel p-4 rounded-2xl border border-slate-800">
-        {/* Search */}
-        <div className="relative flex-1 max-w-md">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name, phone, cell group, or tag..."
-            className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-
-        {/* Status Filters & Admin Add Button */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-          {['all', 'active', 'at_risk', 'first_time_guest', 'inactive'].map((statusKey) => (
-            <button
-              key={statusKey}
-              onClick={() => setSelectedStatusFilter(statusKey)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize transition whitespace-nowrap ${
-                selectedStatusFilter === statusKey
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              {statusKey.replace('_', ' ')}
-            </button>
-          ))}
-
+      <div className="p-4 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-800">
+            Members Directory ({filteredMembers.length})
+          </span>
           {isAdmin && (
-            <button
-              onClick={onOpenAddModal}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shrink-0"
-              title="Admin Only Manual Intake"
-            >
-              <span>+ Add Member (Admin)</span>
-            </button>
+            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold border border-amber-200">
+              Admin Manual Intake Allowed
+            </span>
           )}
         </div>
-      </div>
 
-      {/* Directory Table */}
-      <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/90 text-slate-400 uppercase font-semibold border-b border-slate-800 text-[10px] tracking-wider">
-              <tr>
-                <th className="py-3.5 px-4">Member Name</th>
-                <th className="py-3.5 px-4">Contact Info</th>
-                <th className="py-3.5 px-4">Cell / Small Group</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Tags</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {filteredMembers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-10 text-slate-500">
-                    No member records found matching your filters.
-                  </td>
-                </tr>
-              ) : (
-                filteredMembers.map((member) => (
-                  <tr
-                    key={member.id}
-                    className="hover:bg-slate-800/40 transition group cursor-pointer"
-                    onClick={() => setActiveDrawerMember(member)}
-                  >
-                    {/* Name & Avatar */}
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center font-bold text-white text-xs shadow-md">
-                          {member.first_name[0]}{member.last_name[0]}
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-200 group-hover:text-amber-300 transition">
-                            {member.first_name} {member.last_name}
-                          </p>
-                          <p className="text-[10px] text-slate-400">ID: {member.id}</p>
-                        </div>
-                      </div>
-                    </td>
+        {/* Filters */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <select
+            value={filterCell}
+            onChange={(e) => setFilterCell(e.target.value)}
+            className="bg-white border border-slate-300 text-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-indigo-500 shadow-sm"
+          >
+            <option value="all">All Cell Groups</option>
+            {cellGroups.map(cell => (
+              <option key={cell} value={cell}>{cell}</option>
+            ))}
+          </select>
 
-                    {/* Contact Info */}
-                    <td className="py-3 px-4">
-                      <p className="font-semibold text-slate-300">{member.phone}</p>
-                      <p className="text-[10px] text-slate-400">{member.email || 'No email'}</p>
-                    </td>
-
-                    {/* Cell Group */}
-                    <td className="py-3 px-4">
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-medium text-[11px]">
-                        {member.cell_group}
-                      </span>
-                    </td>
-
-                    {/* Status Pill */}
-                    <td className="py-3 px-4">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${
-                        member.status === 'active'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                          : member.status === 'at_risk'
-                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/30 animate-pulse'
-                          : member.status === 'first_time_guest'
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
-                      }`}>
-                        {member.status.replace('_', ' ')}
-                      </span>
-                    </td>
-
-                    {/* Tags */}
-                    <td className="py-3 px-4">
-                      <div className="flex flex-wrap gap-1">
-                        {member.tags.slice(0, 2).map((t, idx) => (
-                          <span key={idx} className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 text-[10px]">
-                            {t}
-                          </span>
-                        ))}
-                        {member.tags.length > 2 && (
-                          <span className="text-[10px] text-slate-500">+{member.tags.length - 2}</span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1.5">
-                        <a
-                          href={`https://wa.me/${member.phone.replace(/[^0-9]/g, '')}?text=Shalom%20${encodeURIComponent(member.first_name)}%2C%20greetings%20from%20Fountain%20Gate%20Chapel!`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-2 py-1 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/40 border border-emerald-500/30 transition text-[10px] font-semibold"
-                          title="WhatsApp Direct Link"
-                        >
-                          WhatsApp
-                        </a>
-                        <button
-                          onClick={() => setActiveDrawerMember(member)}
-                          className="px-2 py-1 rounded-lg bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40 border border-indigo-500/30 transition text-[10px] font-semibold"
-                          title="View Complete Profile"
-                        >
-                          Profile
-                        </button>
-                        {isAdmin && (
-                          <button
-                            onClick={() => deleteMember(member.id)}
-                            className="px-2 py-1 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition text-[10px] font-semibold"
-                            title="Delete Member (Admin Only)"
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="bg-white border border-slate-300 text-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-indigo-500 shadow-sm"
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="at_risk">At Risk</option>
+            <option value="first_time_guest">First Time Guest</option>
+            <option value="inactive">Inactive</option>
+          </select>
         </div>
       </div>
 
-      {/* Drawer */}
-      {activeDrawerMember && (
-        <MemberProfileDrawer
-          member={activeDrawerMember}
-          onClose={() => setActiveDrawerMember(null)}
-        />
-      )}
+      {/* Table Container */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-xs text-slate-700">
+          <thead className="bg-slate-100/90 text-slate-600 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+            <tr>
+              <th className="p-3 pl-4">Member Name</th>
+              <th className="p-3">Phone & Email</th>
+              <th className="p-3">Cell Group</th>
+              <th className="p-3">Status</th>
+              <th className="p-3">Absences</th>
+              <th className="p-3 text-right pr-4">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 bg-white">
+            {filteredMembers.map((member) => (
+              <tr
+                key={member.id}
+                onClick={() => onSelectMember(member)}
+                className="hover:bg-slate-50 cursor-pointer transition"
+              >
+                <td className="p-3 pl-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0">
+                      {member.first_name[0]}{member.last_name[0]}
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900 leading-none">{member.first_name} {member.last_name}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Joined: {member.first_visited_at}</p>
+                    </div>
+                  </div>
+                </td>
+
+                <td className="p-3">
+                  <p className="font-semibold text-slate-800">{member.phone}</p>
+                  <p className="text-[10px] text-slate-400 truncate">{member.email || 'No email'}</p>
+                </td>
+
+                <td className="p-3 font-medium text-slate-700">
+                  {member.cell_group}
+                </td>
+
+                <td className="p-3">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border inline-block ${
+                    member.status === 'active' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                    member.status === 'at_risk' ? 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse' :
+                    member.status === 'first_time_guest' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                    'bg-slate-100 text-slate-600 border-slate-300'
+                  }`}>
+                    {member.status.replace(/_/g, ' ')}
+                  </span>
+                </td>
+
+                <td className="p-3 font-semibold">
+                  <span className={member.consecutive_absences >= 3 ? 'text-rose-600 font-bold' : 'text-slate-600'}>
+                    {member.consecutive_absences} wks
+                  </span>
+                </td>
+
+                <td className="p-3 text-right pr-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectMember(member);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition"
+                  >
+                    View
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

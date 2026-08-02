@@ -1,26 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { BroadcastComposer } from '../../components/comms/BroadcastComposer';
 import { TemplateLibrary } from '../../components/comms/TemplateLibrary';
 
 export default function CommunicationsPage() {
-  const [selectedTemplate, setSelectedTemplate] = useState('');
-
   return (
     <div className="space-y-6 pb-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-3xl border border-slate-800">
-        <div>
-          <h2 className="font-display text-2xl font-bold text-white">Direct Member Communication Center</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Multi-channel WhatsApp API & SMS broadcasts, pre-formatted pastoral templates, and 1-click direct links.
-          </p>
-        </div>
+      <div>
+        <h1 className="font-display font-bold text-2xl sm:text-3xl text-slate-900">
+          WhatsApp & SMS Communications
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Direct messaging dispatch center for sanctuary announcements, cell group updates, and guest follow-up.
+        </p>
       </div>
 
-      <BroadcastComposer key={selectedTemplate} initialTemplate={selectedTemplate} />
-      <TemplateLibrary onSelectTemplate={(txt) => setSelectedTemplate(txt)} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <BroadcastComposer />
+        </div>
+        <div>
+          <TemplateLibrary />
+        </div>
+      </div>
     </div>
   );
 }

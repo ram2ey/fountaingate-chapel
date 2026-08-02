@@ -4,116 +4,47 @@ import React from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
 
 export const FirstTimeGuestPipeline: React.FC = () => {
-  const { guestRetention, updateGuestRetention } = useChurch();
+  const { members } = useChurch();
+
+  const guests = members.filter(m => m.status === 'first_time_guest');
 
   return (
-    <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="glass-panel p-5 rounded-2xl border border-slate-200">
+      <div className="flex items-center justify-between mb-3">
         <div>
-          <h4 className="font-display font-bold text-base text-slate-100">
-            First-Time Guest Automated Retention Pipeline
-          </h4>
-          <p className="text-xs text-slate-400">Structured 7-day retention journey for new visitors</p>
+          <h4 className="font-display font-bold text-base text-slate-900">First-Time Guest Intake Pipeline</h4>
+          <p className="text-xs text-slate-500">Self-serve intake via QR / Welcome Desk</p>
         </div>
-        <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
-          {guestRetention.length} Guests In Pipeline
+        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-xs border border-amber-200">
+          {guests.length} New Guests
         </span>
       </div>
 
-      <div className="space-y-3">
-        {guestRetention.length === 0 ? (
-          <div className="p-6 text-center border border-dashed border-slate-800 rounded-xl">
-            <p className="text-xs text-slate-500">No guests currently in retention pipeline.</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+        {guests.length === 0 ? (
+          <div className="col-span-2 text-center py-6 border border-dashed border-slate-200 rounded-xl bg-slate-50">
+            <p className="text-xs font-bold text-slate-700">No new guests logged in the current intake window.</p>
           </div>
         ) : (
-          guestRetention.map(item => (
-            <div key={item.id} className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
-                <div>
-                  <h5 className="font-bold text-sm text-slate-200">{item.guest_name}</h5>
-                  <p className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
-                    <span>{item.phone}</span>
-                    <span>•</span>
-                    <span>First Visit: {item.first_visit_date}</span>
-                  </p>
-                </div>
-                {item.notes && (
-                  <p className="text-xs text-slate-400 italic bg-slate-950 p-2 rounded-lg border border-slate-800">
-                    "{item.notes}"
-                  </p>
-                )}
+          guests.map((guest) => (
+            <div key={guest.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-900 text-xs">{guest.first_name} {guest.last_name}</span>
+                <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
+                  Visited: {guest.first_visited_at}
+                </span>
               </div>
+              <p className="text-[11px] text-slate-600 font-medium">Phone: {guest.phone}</p>
 
-              {/* Retention Workflow Steps */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                {/* Step 1: Day 1 Welcome */}
-                <div className={`p-3 rounded-xl border transition ${
-                  item.day1_welcome_sent
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                    : 'bg-slate-950 border-slate-800 text-slate-400'
-                }`}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-bold text-[11px]">Day 1: Welcome SMS/WhatsApp</span>
-                    {item.day1_welcome_sent && <span className="text-emerald-400 font-bold">✓</span>}
-                  </div>
-                  <p className="text-[10px] text-slate-400 mb-2">Automated warm message delivered to phone.</p>
-                  <button
-                    onClick={() => updateGuestRetention(item.id, { day1_welcome_sent: !item.day1_welcome_sent })}
-                    className={`w-full py-1 rounded-lg text-[10px] font-bold border transition ${
-                      item.day1_welcome_sent
-                        ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/40'
-                        : 'bg-indigo-600 text-white hover:bg-indigo-500'
-                    }`}
-                  >
-                    {item.day1_welcome_sent ? 'Sent ✓' : 'Trigger Welcome SMS'}
-                  </button>
-                </div>
-
-                {/* Step 2: Day 3 Call */}
-                <div className={`p-3 rounded-xl border transition ${
-                  item.day3_call_done
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                    : 'bg-slate-950 border-slate-800 text-slate-400'
-                }`}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-bold text-[11px]">Day 3: Pastoral Follow-up Call</span>
-                    {item.day3_call_done && <span className="text-emerald-400 font-bold">✓</span>}
-                  </div>
-                  <p className="text-[10px] text-slate-400 mb-2">Assigned task for pastoral telephone check-in.</p>
-                  <button
-                    onClick={() => updateGuestRetention(item.id, { day3_call_done: !item.day3_call_done })}
-                    className={`w-full py-1 rounded-lg text-[10px] font-bold border transition ${
-                      item.day3_call_done
-                        ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/40'
-                        : 'bg-amber-500 text-slate-950 hover:bg-amber-400'
-                    }`}
-                  >
-                    {item.day3_call_done ? 'Call Logged ✓' : 'Log Phone Call'}
-                  </button>
-                </div>
-
-                {/* Step 3: Day 7 Class */}
-                <div className={`p-3 rounded-xl border transition ${
-                  item.day7_class_invited
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                    : 'bg-slate-950 border-slate-800 text-slate-400'
-                }`}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-bold text-[11px]">Day 7: New Believers Class</span>
-                    {item.day7_class_invited && <span className="text-emerald-400 font-bold">✓</span>}
-                  </div>
-                  <p className="text-[10px] text-slate-400 mb-2">Invitation to Believers Foundations Class.</p>
-                  <button
-                    onClick={() => updateGuestRetention(item.id, { day7_class_invited: !item.day7_class_invited })}
-                    className={`w-full py-1 rounded-lg text-[10px] font-bold border transition ${
-                      item.day7_class_invited
-                        ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/40'
-                        : 'bg-indigo-600 text-white hover:bg-indigo-500'
-                    }`}
-                  >
-                    {item.day7_class_invited ? 'Invited ✓' : 'Send Class Invite'}
-                  </button>
-                </div>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                <a
+                  href={`https://wa.me/${guest.phone.replace(/[^0-9]/g, '')}?text=Welcome%20to%20Fountain%20Gate%20Chapel%20${encodeURIComponent(guest.first_name)}!%20We%20are%20so%20glad%20you%20worshipped%20with%20us.`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[10px] hover:bg-emerald-500 transition"
+                >
+                  Send Pastoral Welcome Message
+                </a>
               </div>
             </div>
           ))

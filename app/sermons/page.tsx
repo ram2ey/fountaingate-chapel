@@ -1,36 +1,38 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useChurch } from '../../lib/context/ChurchContext';
 import { FacebookLivePlayer } from '../../components/media/FacebookLivePlayer';
 import { AudioLibraryPlayer } from '../../components/media/AudioLibraryPlayer';
 import { Mp3UploaderModal } from '../../components/media/Mp3UploaderModal';
 
 export default function SermonsPage() {
-  const { sermons } = useChurch();
   const [showUploader, setShowUploader] = useState(false);
 
-  const liveSermon = sermons.find(s => s.is_live) || sermons[0];
-
   return (
-    <div className="space-y-6 pb-24">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-3xl border border-slate-800">
+    <div className="space-y-6 pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-display text-2xl font-bold text-white">Sermon & Media Ecosystem</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Facebook Live auto-embed player with interactive prayer overlay, on-demand MP3 library, and background audio streaming.
+          <h1 className="font-display font-bold text-2xl sm:text-3xl text-slate-900">
+            Sermons & Media Hub
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Facebook Live broadcasting center and mobile MP3 audio sermon library.
           </p>
         </div>
+
+        <button
+          onClick={() => setShowUploader(true)}
+          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition self-start sm:self-auto"
+        >
+          + Upload MP3 Message
+        </button>
       </div>
 
-      {/* Facebook Live Section */}
-      {liveSermon && <FacebookLivePlayer sermon={liveSermon} />}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <FacebookLivePlayer />
+        <AudioLibraryPlayer />
+      </div>
 
-      {/* Audio Library Section */}
-      <AudioLibraryPlayer onOpenUploader={() => setShowUploader(true)} />
-
-      {/* Uploader Modal */}
       {showUploader && <Mp3UploaderModal onClose={() => setShowUploader(false)} />}
     </div>
   );

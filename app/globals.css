@@ -11,74 +11,55 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: #0f172a;
-  color: #f8fafc;
+  background-color: #f8fafc;
+  color: #0f172a;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Glassmorphism Utilities */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+/* Light Mode Glassmorphism Utility Classes */
 .glass-panel {
-  background: rgba(30, 41, 59, 0.7);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-card {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.12), 0 2px 6px -1px rgba(148, 163, 184, 0.08);
 }
 
 .glass-dropdown {
-  background: rgba(15, 23, 42, 0.95);
+  background: #ffffff;
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  box-shadow: 0 10px 30px -5px rgba(51, 65, 85, 0.15);
 }
 
-/* Gold & Indigo Gradients */
-.gradient-primary {
-  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 50%, #1e1b4b 100%);
-}
-
-.gradient-gold {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-}
-
-.gradient-dark {
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-}
-
-/* Live Pulse Animation */
-@keyframes live-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.4;
-    transform: scale(1.15);
-  }
-}
-
-.animate-live-pulse {
-  animation: live-pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Custom Scrollbar */
+/* Custom Touch Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #f1f5f9;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #cbd5e1;
   border-radius: 9999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #94a3b8;
+}
+
+/* Pulse animation for live services */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.15); }
+}
+
+.animate-live-pulse {
+  animation: live-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

@@ -3,56 +3,66 @@
 import React, { useState } from 'react';
 import { MemberDirectoryTable } from '../../components/members/MemberDirectoryTable';
 import { FirstTimeGuestPipeline } from '../../components/members/FirstTimeGuestPipeline';
+import { MemberProfileDrawer } from '../../components/members/MemberProfileDrawer';
 import { AddMemberModal } from '../../components/members/AddMemberModal';
+import { Member } from '../../lib/types/church';
+import { useChurch } from '../../lib/context/ChurchContext';
 
 export default function MembersPage() {
+  const { currentRole } = useChurch();
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'directory' | 'retention'>('directory');
+
+  const isAdmin = currentRole === 'admin';
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-3xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-display text-2xl font-bold text-white">Central Member Directory & Guests</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Comprehensive profile records, dynamic tagging, and automated guest retention.
+          <div className="flex items-center gap-2">
+            <h1 className="font-display font-bold text-2xl sm:text-3xl text-slate-900">
+              Members & Guest Intake
+            </h1>
+            {isAdmin ? (
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold border border-amber-200">
+                Admin Intake Mode
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold border border-indigo-200">
+                View Only Mode
+              </span>
+            )}
+          </div>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            {isAdmin 
+              ? 'Admin role active: Manual intake enabled alongside QR code guest registration.' 
+              : 'Pastoral view active: Access directory records and member profiles.'}
           </p>
         </div>
 
-        {/* Tab Toggle */}
-        <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800">
+        {isAdmin && (
           <button
-            onClick={() => setActiveTab('directory')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
-              activeTab === 'directory'
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            onClick={() => setShowAddModal(true)}
+            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition self-start sm:self-auto"
           >
-            All Members Directory
+            + Register Member (Admin)
           </button>
-          <button
-            onClick={() => setActiveTab('retention')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
-              activeTab === 'retention'
-                ? 'bg-amber-500 text-slate-950 shadow-lg'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <span>Guest Retention Pipeline</span>
-          </button>
-        </div>
+        )}
       </div>
 
-      {/* Content */}
-      {activeTab === 'directory' ? (
-        <MemberDirectoryTable onOpenAddModal={() => setShowAddModal(true)} />
-      ) : (
-        <FirstTimeGuestPipeline />
+      <FirstTimeGuestPipeline />
+      <MemberDirectoryTable onSelectMember={(member) => setSelectedMember(member)} />
+
+      {selectedMember && (
+        <MemberProfileDrawer
+          member={selectedMember}
+          onClose={() => setSelectedMember(null)}
+        />
       )}
 
-      {showAddModal && <AddMemberModal onClose={() => setShowAddModal(false)} />}
+      {showAddModal && (
+        <AddMemberModal onClose={() => setShowAddModal(false)} />
+      )}
     </div>
   );
 }

@@ -7,32 +7,36 @@ import { MilestonesCalendar } from '../../components/care/MilestonesCalendar';
 import { RapidCheckInModal } from '../../components/care/RapidCheckInModal';
 
 export default function PastoralCarePage() {
-  const [showCheckInModal, setShowCheckInModal] = useState(false);
+  const [showCheckIn, setShowCheckIn] = useState(false);
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-3xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-display text-2xl font-bold text-white">Proactive Pastoral Care & Shepherding</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Automated "At-Risk" member flagging engine, confidential counseling logs, and care milestone reminders.
+          <h1 className="font-display font-bold text-2xl sm:text-3xl text-slate-900">
+            Pastoral Care & Member Retention
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Automated at-risk member identification, confidential counseling logs, and birthday felicitations.
           </p>
         </div>
 
         <button
-          onClick={() => setShowCheckInModal(true)}
-          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-lg shadow-indigo-900/50 shrink-0"
+          onClick={() => setShowCheckIn(true)}
+          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition self-start sm:self-auto"
         >
-          <span>Rapid Service Check-In</span>
+          + Rapid Attendance Check-In
         </button>
       </div>
 
       <AtRiskQueue />
-      <ConfidentialCareLog />
-      <MilestonesCalendar />
 
-      {showCheckInModal && <RapidCheckInModal onClose={() => setShowCheckInModal(false)} />}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ConfidentialCareLog />
+        <MilestonesCalendar />
+      </div>
+
+      {showCheckIn && <RapidCheckInModal onClose={() => setShowCheckIn(false)} />}
     </div>
   );
 }

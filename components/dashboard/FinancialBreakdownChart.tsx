@@ -3,7 +3,6 @@
 import React from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Wallet } from 'lucide-react';
 
 export const FinancialBreakdownChart: React.FC = () => {
   const { contributions } = useChurch();
@@ -14,24 +13,24 @@ export const FinancialBreakdownChart: React.FC = () => {
   const specialTotal = contributions.filter(c => c.type === 'special_seed' || c.type === 'missions').reduce((a, b) => a + b.amount, 0);
 
   const data = [
-    { name: 'Tithes', value: titheTotal || 1500, color: '#6366f1' },
+    { name: 'Tithes', value: titheTotal || 1500, color: '#4f46e5' },
     { name: 'Sunday Offering', value: offeringTotal || 8450, color: '#f59e0b' },
     { name: 'Building Fund', value: buildingTotal || 2500, color: '#10b981' },
-    { name: 'Special Seed & Missions', value: specialTotal || 1200, color: '#38bdf8' },
+    { name: 'Special Seed', value: specialTotal || 1200, color: '#0284c7' },
   ];
 
   const totalSum = data.reduce((acc, item) => acc + item.value, 0);
 
   return (
-    <div className="glass-panel p-5 rounded-2xl border border-slate-800 flex flex-col justify-between">
+    <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-slate-200 flex flex-col justify-between">
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="font-display font-bold text-base text-slate-100">Financial Giving Breakdown</h4>
-          <span className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
-            <Wallet className="w-4 h-4" />
+        <div className="flex items-center justify-between mb-1">
+          <h4 className="font-display font-bold text-base text-slate-900">Financial Giving Breakdown</h4>
+          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-200">
+            Ledger Active
           </span>
         </div>
-        <p className="text-xs text-slate-400">Distribution across giving funds</p>
+        <p className="text-xs text-slate-500">Distribution across giving funds</p>
       </div>
 
       <div className="h-44 w-full relative my-2">
@@ -45,28 +44,28 @@ export const FinancialBreakdownChart: React.FC = () => {
               dataKey="value"
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} stroke="#0f172a" strokeWidth={2} />
+                <Cell key={`cell-${index}`} fill={entry.color} stroke="#ffffff" strokeWidth={2} />
               ))}
             </Pie>
             <Tooltip
-              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+              contentStyle={{ backgroundColor: '#ffffff', borderColor: '#cbd5e1', borderRadius: '12px', color: '#0f172a', fontSize: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
               formatter={(val: number) => [`GHS ${val.toLocaleString()}`, 'Amount']}
             />
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-[10px] text-slate-400 font-semibold uppercase">Total Recorded</span>
-          <span className="text-sm font-bold text-slate-100 font-display">GHS {totalSum.toLocaleString()}</span>
+          <span className="text-[10px] text-slate-400 font-bold uppercase">Total Recorded</span>
+          <span className="text-sm font-extrabold text-slate-900 font-display">GHS {totalSum.toLocaleString()}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800/80">
+      <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
         {data.map((item, idx) => (
           <div key={idx} className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
             <div className="truncate">
-              <p className="text-[11px] text-slate-300 font-medium truncate">{item.name}</p>
-              <p className="text-[10px] text-slate-400 font-bold">GHS {item.value.toLocaleString()}</p>
+              <p className="text-[11px] text-slate-700 font-semibold truncate">{item.name}</p>
+              <p className="text-[10px] text-slate-500 font-bold">GHS {item.value.toLocaleString()}</p>
             </div>
           </div>
         ))}

@@ -10,151 +10,108 @@ interface Props {
 }
 
 export const MemberProfileDrawer: React.FC<Props> = ({ member, onClose }) => {
-  const { careNotes, contributions } = useChurch();
-
+  const { careNotes } = useChurch();
   const memberNotes = careNotes.filter(n => n.member_id === member.id);
-  const memberContributions = contributions.filter(c => c.member_id === member.id);
-  const totalGiven = memberContributions.reduce((a, b) => a + b.amount, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-md h-full glass-panel border-l border-slate-700 shadow-2xl p-6 overflow-y-auto flex flex-col justify-between">
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300">
         <div>
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                {member.first_name[0]}{member.last_name[0]}
-              </div>
-              <div>
-                <h3 className="font-display font-bold text-lg text-white">
-                  {member.first_name} {member.last_name}
-                </h3>
-                <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border mt-0.5 uppercase ${
-                  member.status === 'active'
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                    : member.status === 'at_risk'
-                    ? 'bg-rose-500/20 text-rose-300 border-rose-500/30 animate-pulse'
-                    : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
-                }`}>
-                  {member.status.replace('_', ' ')}
-                </span>
-              </div>
-            </div>
-
+          <div className="p-6 bg-gradient-to-r from-indigo-900 to-indigo-800 text-white relative">
             <button
               onClick={onClose}
-              className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-xs font-bold"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-sm"
             >
               ✕
             </button>
+
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-amber-400 text-slate-950 font-bold text-xl flex items-center justify-center shadow-lg">
+                {member.first_name[0]}{member.last_name[0]}
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-xl text-white">
+                  {member.first_name} {member.last_name}
+                </h3>
+                <p className="text-xs text-amber-300 font-semibold mt-0.5">{member.cell_group}</p>
+              </div>
+            </div>
           </div>
 
-          {/* Quick Contact & WhatsApp */}
-          <div className="mt-4 p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
-            <div>
-              <p className="text-[10px] text-slate-400 font-semibold uppercase">Mobile Contact</p>
-              <p className="font-bold text-slate-200 mt-0.5">{member.phone}</p>
-            </div>
-            <a
-              href={`https://wa.me/${member.phone.replace(/[^0-9]/g, '')}?text=Shalom%20${encodeURIComponent(member.first_name)}%2C%20greetings%20from%20Fountain%20Gate%20Chapel!`}
-              target="_blank"
-              rel="noreferrer"
-              className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-md text-xs"
-            >
-              WhatsApp Direct
-            </a>
-          </div>
-
-          {/* Details Grid */}
-          <div className="mt-6 space-y-3 text-xs">
-            <h4 className="font-display font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-              Personal Information
-            </h4>
-
-            <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-              <span className="text-[10px] text-slate-400 block font-medium">Cell Group</span>
-              <span className="font-bold text-slate-200 mt-0.5 block">{member.cell_group}</span>
+          {/* Details Body */}
+          <div className="p-6 space-y-5 text-xs text-slate-700">
+            {/* Quick Contact Bar */}
+            <div className="flex items-center gap-2">
+              <a
+                href={`https://wa.me/${member.phone.replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-center transition shadow-sm"
+              >
+                WhatsApp Member
+              </a>
+              <a
+                href={`tel:${member.phone}`}
+                className="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold transition border border-slate-300"
+              >
+                Call Phone
+              </a>
             </div>
 
-            {member.email && (
-              <div className="p-2.5 rounded-xl bg-slate-900/40 text-slate-300">
-                <span className="text-[10px] text-slate-400 block font-medium">Email Address</span>
-                <span className="font-semibold">{member.email}</span>
-              </div>
-            )}
-
-            {member.dob && (
-              <div className="p-2.5 rounded-xl bg-slate-900/40 text-slate-300">
-                <span className="text-[10px] text-slate-400 block font-medium">Birthday</span>
-                <span className="font-semibold text-amber-300">{member.dob}</span>
-              </div>
-            )}
-
-            {member.address && (
-              <div className="p-2.5 rounded-xl bg-slate-900/40 text-slate-300">
-                <span className="text-[10px] text-slate-400 block font-medium">Residential Address</span>
-                <span className="font-semibold">{member.address}</span>
-              </div>
-            )}
-
-            {/* Tags */}
-            <div className="pt-2">
-              <span className="text-[10px] text-slate-400 font-semibold uppercase block mb-1.5">Assigned Tags</span>
-              <div className="flex flex-wrap gap-1.5">
-                {member.tags.map((tag, idx) => (
-                  <span key={idx} className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-semibold">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Financial Summary */}
-            <div className="pt-4 border-t border-slate-800">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-display font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                  Recorded Contributions
-                </h4>
-                <span className="text-xs font-bold text-emerald-400">GHS {totalGiven.toLocaleString()}</span>
-              </div>
-              <p className="text-[10px] text-slate-400">Total tithes & building seeds recorded on ledger</p>
-            </div>
-
-            {/* Pastoral Care Notes History */}
-            <div className="pt-4 border-t border-slate-800">
-              <h4 className="font-display font-bold text-slate-300 uppercase tracking-wider text-[11px] mb-2">
-                Pastoral Care Logs ({memberNotes.length})
-              </h4>
-              {memberNotes.length === 0 ? (
-                <p className="text-[11px] text-slate-500 italic">No care notes logged yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {memberNotes.map(note => (
-                    <div key={note.id} className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-[11px]">
-                      <div className="flex items-center justify-between text-slate-400 mb-1">
-                        <span className="font-semibold text-indigo-300">{note.pastor_name}</span>
-                        <span>{note.created_at}</span>
-                      </div>
-                      <p className="text-slate-200">{note.note}</p>
-                      {note.action_item && (
-                        <p className="text-amber-300 font-semibold mt-1">Action: {note.action_item}</p>
-                      )}
-                    </div>
-                  ))}
+            {/* General Information */}
+            <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Member Details</h4>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Status</span>
+                  <span className="font-bold text-indigo-700 capitalize">{member.status.replace(/_/g, ' ')}</span>
                 </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Absences</span>
+                  <span className="font-bold text-slate-800">{member.consecutive_absences} consecutive</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Date of Birth</span>
+                  <span className="font-medium text-slate-800">{member.dob || 'Not provided'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">First Visited</span>
+                  <span className="font-medium text-slate-800">{member.first_visited_at}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Care History */}
+            <div className="space-y-3">
+              <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Pastoral Care Notes ({memberNotes.length})</h4>
+              {memberNotes.length === 0 ? (
+                <p className="text-slate-400 text-xs italic">No pastoral care notes logged yet.</p>
+              ) : (
+                memberNotes.map((note) => (
+                  <div key={note.id} className="p-3 rounded-xl bg-indigo-50/60 border border-indigo-100 space-y-1">
+                    <div className="flex items-center justify-between text-[10px] text-indigo-800 font-bold">
+                      <span>{note.created_at}</span>
+                      {note.is_confidential && <span className="text-rose-600 font-bold">[CONFIDENTIAL]</span>}
+                    </div>
+                    <p className="text-xs text-slate-800 font-medium">{note.note}</p>
+                    {note.action_item && (
+                      <p className="text-[10px] text-amber-700 font-semibold mt-1">Action: {note.action_item}</p>
+                    )}
+                  </div>
+                ))
               )}
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="pt-4 border-t border-slate-800 mt-6">
+        <div className="p-4 border-t border-slate-200 bg-slate-50 text-right">
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+            className="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs"
           >
-            Close Member Profile
+            Close Profile
           </button>
         </div>
       </div>

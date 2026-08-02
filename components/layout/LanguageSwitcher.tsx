@@ -14,7 +14,7 @@ export const LanguageSwitcher: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 hover:bg-slate-700/60 text-xs font-semibold text-slate-200 transition shadow-sm"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 hover:bg-slate-200/80 text-xs font-semibold text-slate-800 transition shadow-sm"
         title="Switch Interface Language (English, Twi, Ewe, Hausa, French)"
       >
         <span>Lang: {activeLangObj.code}</span>
@@ -24,8 +24,8 @@ export const LanguageSwitcher: React.FC = () => {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-44 rounded-xl glass-dropdown p-1.5 shadow-2xl z-40 border border-slate-700/80 animate-in fade-in zoom-in-95">
-            <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 mb-1">
+          <div className="absolute right-0 mt-2 w-44 rounded-2xl glass-dropdown p-1.5 shadow-2xl z-40 border border-slate-200 animate-in fade-in zoom-in-95">
+            <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1">
               Select Language
             </div>
             {(Object.keys(LANGUAGE_LABELS) as Language[]).map(langKey => (
@@ -35,14 +35,14 @@ export const LanguageSwitcher: React.FC = () => {
                   setCurrentLanguage(langKey);
                   setIsOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs text-left transition font-medium ${
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs text-left transition font-medium ${
                   langKey === currentLanguage
-                    ? 'bg-indigo-600/30 text-white font-bold border border-indigo-500/30'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-200'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
                 <span>{LANGUAGE_LABELS[langKey].label}</span>
-                {langKey === currentLanguage && <span className="text-amber-400 font-bold">✓</span>}
+                {langKey === currentLanguage && <span className="text-amber-600 font-bold">✓</span>}
               </button>
             ))}
           </div>
