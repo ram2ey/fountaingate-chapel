@@ -51,7 +51,7 @@ test('clean PostgreSQL migrations and runtime RLS enforce branch, identity and c
  await asActor('member',()=>db.query('UPDATE public.notification_preferences SET sms=true WHERE user_id=identity.actor()'));
  await assert.rejects(asActor('member',()=>db.query('INSERT INTO public.notification_preferences(user_id) VALUES($1)',[actors.admin])),/row-level security/);
  const prayer=(await db.query("INSERT INTO public.prayers(branch_id,author_id,title,body) VALUES($1,$2,'Private','secret') RETURNING id",[branch,actors.member])).rows[0].id;
- assert.equal((await asActor('admin',()=>db.query('SELECT * FROM public.prayers'))).rows.length,1);
+ assert.equal((await asActor('admin',()=>db.query('SELECT * FROM public.prayers'))).rows.length,0);
  await asActor('member',async()=>{await db.query('INSERT INTO public.prayer_reactions(branch_id,prayer_id,user_id) VALUES($1,$2,identity.actor())',[branch,prayer]);assert.equal((await db.query('DELETE FROM public.prayer_reactions WHERE prayer_id=$1 RETURNING user_id',[prayer])).rows.length,1);});
  await assert.rejects(asActor('member',()=>db.query('UPDATE public.prayers SET author_id=$1 WHERE id=$2',[actors.admin,prayer])),/permission denied/);
  await asActor('admin',()=>db.query("INSERT INTO public.contributions(branch_id,member_id,amount_minor,currency,fund,method,recorded_by) VALUES($1,$2,100,'GHS','offering','cash',identity.actor())",[branch,member]));

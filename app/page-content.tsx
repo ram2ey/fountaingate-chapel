@@ -1,5 +1,6 @@
 'use client';
 
+import { PrayerHighlights } from '../components/core/PrayerHighlights';
 import React, { useState } from 'react';
 import { MetricsOverview } from '../components/dashboard/MetricsOverview';
 import { AttendanceChart } from '../components/dashboard/AttendanceChart';
@@ -25,6 +26,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-8">
+      <PrayerHighlights/>
       {/* Header Banner (No Pill Tag) */}
       <div className="glass-panel p-5 sm:p-6 rounded-none border border-indigo-200 bg-indigo-50/80 shadow-md space-y-3 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">

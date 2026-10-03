@@ -62,4 +62,4 @@ jobs:
             docker run --rm --network fgc-ci -e MIGRATION_DATABASE_URL=postgresql://fgc_owner:ci-owner@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable fgc-maintenance:check
           done
           docker run --rm --network fgc-ci -e DATABASE_URL=postgresql://fgc_runtime:ci-web@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable fgc-maintenance:check node scripts/db-check.cjs
-          test "$(docker exec fgc-pg psql -U postgres -tAc 'SELECT count(*) FROM public.schema_migrations')" = "7"
+          test "$(docker exec fgc-pg psql -U postgres -tAc 'SELECT count(*) FROM public.schema_migrations')" = "9"

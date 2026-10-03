@@ -85,8 +85,9 @@ try {
     pathname = '/' + route;
     const Page = require('../app/' + route + '/page.tsx').default;
     const html = render(React.createElement(AuthGuard, null, React.createElement(Page)));
-    assert.match(html, /temporarily unavailable/);
-    assert.doesNotMatch(html, /<form|<input|<button|<textarea|Confirmed|successfully/);
+    assert.match(html, /First-time guest intake/);
+    assert.match(html, /<form/);
+    assert.doesNotMatch(html, /Confirmed|successfully/);
   }
   checks++;
 

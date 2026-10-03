@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { IdentityManagement } from '../../components/admin/IdentityManagement';
-import { AuditLogFeed } from '../../components/admin/AuditLogFeed';
+import { CoreWorkspace } from '../../components/core/CoreWorkspace';
 import { DataExportCenter } from '../../components/admin/DataExportCenter';
 import { useChurch } from '../../lib/context/ChurchContext';
 
@@ -66,7 +66,7 @@ export default function AdminPage() {
       </div>
 
       {activeTab === 'users' && <IdentityManagement />}
-      {activeTab === 'audit' && <AuditLogFeed />}
+      {activeTab === 'audit' && <CoreWorkspace resource="audit" />}
       {activeTab === 'export' && <DataExportCenter />}
     </div>
   );

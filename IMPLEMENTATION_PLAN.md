@@ -138,6 +138,8 @@ Dependency: complete this phase before exposing persistent sensitive data or int
 
 ## Phase 3 — Persist core workflows and protect record integrity
 
+Implemented locally on 3 October 2026. Core screens now use PostgreSQL server APIs with validated writes, privacy policies, archive/restore, transactional audit, retry-safe intake and staged follow-ups. See audit/phase-3-results.md for deployment instructions, verification and remaining scale limits. Private responses deliberately use no-store rather than shared caches. Native PostgreSQL/Coolify staging and cross-device release checks remain required.
+
 Audit coverage: 4, 7, 9, 15, 19, 20, 21, 23; foundation for 24.
 
 Tasks:

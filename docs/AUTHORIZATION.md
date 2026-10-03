@@ -9,7 +9,8 @@ The browser uses `lib/auth/permissions.ts` for navigation. Every protected page 
 | Member contacts, households, follow-ups | Denied | Own member row only; no directory page | Current branch | Current branch |
 | Services and attendance | Denied | Current-branch services, own attendance | Current branch | Current branch |
 | Care notes | Denied | Denied | Current branch including confidential | Current branch, nonconfidential only |
-| Prayers/comments/reactions | Denied | Own/private or branch-visible | Current branch, moderation | Current branch, moderation |
+| Prayers/comments/reactions | Denied | Own/private or branch-visible; edit own | Current branch, moderation | Own/private or branch-visible; edit own |
+| Public guest intake | Opted-in branch, validated and rate limited | Same | Same | Same |
 | Confidential documents/files | Denied | Denied | Current branch | Current branch, own confidential or nonconfidential |
 | Giving ledger | Denied | Own member-linked entries | Own member-linked entries | Current branch finance |
 | Staff invitation/demotion | Denied | Denied | Denied | Current branch; elevation requires accepted invitation/TOTP |
@@ -22,7 +23,7 @@ Another branch is denied, including foreign-key links. Staff cannot update ident
 
 `fgc_runtime` has no direct identity-table access. `fgc_auth` can manage identity records but cannot read care, prayer, giving or document content; its security-definer provisioning/check-in functions have fixed search paths, explicit validation and no public execution. `fgc_owner` alone owns migrations/tables; do not expose it to the web process. Identity credentials are sensitive: compromising the identity process can compromise accounts. Use the same private server controls as password/session storage.
 
-Most business workflows remain unavailable until Phase 3 and later services are added. SQL policies establish their boundaries now. UI visibility does not authorize an operation.
+Phase 3 core APIs enforce these boundaries for members, care, guests, profiles and prayers. General administrators cannot read another person's private prayer or confidential guest prayer. Later attendance, finance and media interfaces remain unavailable. UI visibility does not authorize an operation.
 
 Password hashing uses Argon2id (64 MiB, three passes, one lane); benchmark on the deployment server before adjusting costs. Sessions last eight hours, use random 256-bit opaque tokens, store hashes only, and set HttpOnly/Secure-in-production/SameSite=Strict cookies. Mutating APIs require the exact configured Origin and JSON, except PDF uploads which require Origin and a specific PDF content type. Recovery links expire in 15 minutes and are single-use; staff invites expire in 24 hours; kiosk member tokens expire in five minutes and bind the service/branch. Staff authenticator secrets use AES-256-GCM under a separately backed-up 32-byte key; accepted counters cannot be reused.
 

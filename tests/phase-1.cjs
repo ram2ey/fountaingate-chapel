@@ -29,7 +29,7 @@ test('migration credentials are separate and have no application fallback', () =
 
 test('unfinished feature components contain no fake success, upload or playback implementations', () => {
   for (const file of ['app/giving/page-content.tsx', 'app/documents/page-content.tsx',
-    'components/settings/UserProfileSettings.tsx', 'components/financials/PdfStatementGenerator.tsx',
+    'components/financials/PdfStatementGenerator.tsx',
     'components/comms/BroadcastComposer.tsx', 'components/media/Mp3UploaderModal.tsx',
     'components/media/AudioLibraryPlayer.tsx']) {
     const source = fs.readFileSync(path.join(root, file), 'utf8');

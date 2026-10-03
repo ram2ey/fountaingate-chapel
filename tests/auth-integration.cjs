@@ -117,6 +117,43 @@ test('real auth handlers persist accounts, verify phones, change credentials and
    // Only generated direct children of this uniquely allocated test directory are removed.
    for(const name of fs.readdirSync(uploadDirectory)){const target=path.resolve(uploadDirectory,name);assert.equal(path.dirname(target),path.resolve(uploadDirectory));fs.unlinkSync(target);}fs.rmdirSync(uploadDirectory);
   }
+
+  const core=require('../lib/server/core-service.ts');
+  await db.query("UPDATE identity.memberships SET role='pastor' WHERE user_id=$1",[uid]);
+  const added=await core.mutateCore('members',{first_name:'Persisted',last_name:'Person',phone:'+233241234570',email:'',dob:'2000-02-29',address:'Private address',cell_group:'Group'});
+  const directory=await core.readCore('members',new URL('https://church.test/api/core/members?search=Persisted'));assert.equal(directory.items.length,1);assert.equal(directory.items[0].id,added.id);
+  await core.mutateCore('care',{member_id:added.id,body:'Confidential fixture',confidential:true,follow_up_date:'2026-12-01'});
+  assert.equal((await core.readCore('care',new URL('https://church.test/api/core/care'))).items.length,1);
+  await db.query("UPDATE identity.memberships SET role='admin' WHERE user_id=$1",[uid]);
+  assert.equal((await core.readCore('care',new URL('https://church.test/api/core/care'))).items.length,0);
+  await db.query("UPDATE identity.memberships SET role='pastor' WHERE user_id=$1",[uid]);
+  await core.mutateCore('members',{id:added.id,action:'archive'});
+  assert.equal((await core.readCore('care',new URL('https://church.test/api/core/care'))).items.length,0);
+  await core.mutateCore('members',{id:added.id,action:'restore'});
+  assert.equal((await core.readCore('care',new URL('https://church.test/api/core/care'))).items.length,1);
+  await core.mutateCore('profile',{full_name:'Updated real profile',sms:true,email:false});
+  const ownProfile=await core.readCore('profile',new URL('https://church.test/api/core/profile'));assert.equal(ownProfile.profile.full_name,'Updated real profile');assert.equal(ownProfile.preferences.sms,true);
+  await assert.rejects(core.mutateCore('profile',{full_name:'Forbidden',sms:true,email:false,role:'admin'}),/Unsupported field/);
+  const privatePrayer=await core.mutateCore('prayers',{title:'Private prayer',body:'Hidden to unrelated members',visibility:'private'});
+  await core.mutateCore('prayers',{id:privatePrayer.id,action:'react',reacted:true});await core.mutateCore('prayers',{id:privatePrayer.id,action:'react',reacted:true});
+  assert.equal((await core.readCore('prayers',new URL('https://church.test/api/core/prayers'))).items[0].reaction_count,1);
+  await core.mutateCore('prayers',{id:privatePrayer.id,action:'comment',body:'Persisted comment'});
+  await core.mutateCore('prayers',{id:privatePrayer.id,action:'update',body:'Persisted update'});
+  assert.equal((await core.readCore('prayers',new URL('https://church.test/api/core/prayers?thread='+privatePrayer.id))).thread.length,2);
+  const guest=require('../app/api/guest-intake/route.ts');await db.query('UPDATE public.branches SET guest_intake_enabled=true WHERE id=$1',[branch]);
+  const guestBody={key:require('node:crypto').randomUUID(),branch_id:branch,first_name:'Guest',last_name:'Person',phone:'+233241234571',consent:true,prayer:'Guest confidential prayer'};
+  const intake=()=>guest.POST(new Request('https://church.test/api/guest-intake',{method:'POST',headers:{origin:'https://church.test','content-type':'application/json'},body:JSON.stringify(guestBody)}));
+  const firstIntake=await intake();assert.equal(firstIntake.status,201);const receipt=await firstIntake.json();const retry=await intake();assert.equal((await retry.json()).receipt,receipt.receipt);
+  assert.equal((await db.query('SELECT * FROM public.guest_followups WHERE member_id=$1',[receipt.receipt])).rows.length,1);
+  guestBody.first_name='Changed';assert.equal((await intake()).status,400);
+  const guestRecord=(await core.readCore('guests',new URL('https://church.test/api/core/guests'))).items[0];
+  await assert.rejects(core.mutateCore('guests',{id:guestRecord.id,stage:'completed',assigned_to:uid}),/one stage/);
+  await core.mutateCore('guests',{id:guestRecord.id,stage:'welcomed',assigned_to:uid});
+  await core.mutateCore('guests',{id:guestRecord.id,stage:'welcomed',assigned_to:uid});
+  assert.equal((await db.query('SELECT * FROM public.followup_tasks WHERE member_id=$1',[receipt.receipt])).rows.length,1);
+  const {nextBirthday}=require('../lib/server/core-validation.ts');assert.equal(nextBirthday('2000-02-29','2027-03-01'),'2028-02-29');assert.equal(nextBirthday('2000-02-29','2027-01-01'),'2027-02-28');
+  await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);
+  await assert.rejects(core.readCore('members',new URL('https://church.test/api/core/members')),/Access denied/);
   await db.exec('DELETE FROM identity.rate_limits');
   for(let i=0;i<10;i++)assert.equal((await call('login',{phone,password:'wrong',branch_id:branch})).status,401);
   assert.equal((await call('login',{phone,password:'a recovered long password',branch_id:branch})).status,429);

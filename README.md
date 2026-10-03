@@ -1,12 +1,12 @@
 # Fountain Gate Chapel
 
-Phase 2 adds PostgreSQL-backed phone accounts, sessions, password recovery/change, staff invitations/MFA, server authorization, branch-scoped RLS and private file/kiosk service foundations. No demo mode or seeded account exists. Most business screens remain unavailable pending Phase 3 and later integrations.
+Phases 2–3 add PostgreSQL-backed accounts, server authorization and core member, profile, care, guest and prayer workflows. No demo mode or seeded account exists. Attendance analytics, payments, messaging campaigns and media integrations remain later phases.
 
 Read [Phase 2 setup](docs/PHASE-2-SETUP.md), [permission matrix](docs/AUTHORIZATION.md) and [Coolify runbook](docs/COOLIFY.md).
 
 ## Current status
 
-Phase 1 containment remains in place for unfinished business workflows. Phase 2 enables real registration/sign-in/recovery with runtime PostgreSQL and mNotify configuration, staff authenticator enrollment, protected routes and narrow file/kiosk APIs. See [the implementation plan](IMPLEMENTATION_PLAN.md) for the remaining business workflows.
+Core screens now persist through authorized server APIs, with confidential care/prayers, retry-safe guest intake, archive/restore, consent, follow-up ownership and transactional audit events. Read [Phase 3 setup and verification](audit/phase-3-results.md) before enabling intake. Authentication requires runtime PostgreSQL and mNotify configuration. See [the implementation plan](IMPLEMENTATION_PLAN.md) for the remaining workflows.
 
 `GET /health` reports process liveness only. It does not claim database connectivity, authentication readiness or payment/messaging availability.
 
