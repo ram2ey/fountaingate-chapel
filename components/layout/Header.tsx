@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { can, routeCapabilities } from '../../lib/auth/permissions';
 import { useChurch } from '../../lib/context/ChurchContext';
 
 export const Header: React.FC = () => {
@@ -10,6 +11,12 @@ export const Header: React.FC = () => {
   const { isLive, currentUser, logout, currentRole, members } = useChurch();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const [signoutError,setSignoutError]=useState('');
+  const [signingOut,setSigningOut]=useState(false);
+  async function handleLogout(){
+    setSigningOut(true);setSignoutError('');
+    try{await logout();setMobileMenuOpen(false);}catch{setSignoutError('Sign-out failed. Please retry.');}finally{setSigningOut(false);}
+  }
   const atRiskCount = members.filter(m => m.status === 'at_risk').length;
 
   const NAV_ITEMS = [
@@ -29,6 +36,7 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-3 transition-all shadow-sm">
+      {signoutError && <p role="alert" className="text-red-700 text-sm">{signoutError}</p>}
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         {/* Left Side: Brand Name */}
         <div className="flex items-center gap-3 shrink-0">
@@ -77,7 +85,8 @@ export const Header: React.FC = () => {
           {/* Log Out Button on Desktop */}
           {currentUser ? (
             <button
-              onClick={logout}
+              onClick={handleLogout}
+              disabled={signingOut}
               className="hidden md:inline-flex px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold border border-rose-200 transition"
             >
               Log Out
@@ -122,7 +131,7 @@ export const Header: React.FC = () => {
 
             <nav className="space-y-1 max-h-[70vh] overflow-y-auto pr-1">
               {NAV_ITEMS.map((item) => {
-                const isAllowed = item.roles.includes(currentRole);
+                const isAllowed = can(currentRole, routeCapabilities[item.href] || 'kiosk');
                 const isActive = pathname === item.href;
 
                 if (!isAllowed) return null;
@@ -153,10 +162,7 @@ export const Header: React.FC = () => {
               <span className="text-[11px] text-slate-500 truncate max-w-[150px]">{currentUser?.full_name || 'FGC Leader'}</span>
               {currentUser ? (
                 <button
-                  onClick={() => {
-                    logout();
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={handleLogout} disabled={signingOut}
                   className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 font-bold text-[11px] border border-rose-200"
                 >
                   Log Out

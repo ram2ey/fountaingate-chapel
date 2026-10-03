@@ -27,7 +27,7 @@ export const SubmitPrayerModal: React.FC<Props> = ({ onClose }) => {
 
     addPrayerRequest({
       requester_name: isAnonymous ? 'Anonymous Member' : (requesterName || 'Church Member'),
-      requester_phone: requesterPhone || '+233244000111',
+      requester_phone: requesterPhone,
       title,
       details,
       category,

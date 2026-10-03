@@ -19,7 +19,7 @@ export const MemberDashboard: React.FC = () => {
 
         <div className="p-4 rounded-none bg-white border border-indigo-100 shadow-xs space-y-1">
           <p className="text-xs sm:text-sm font-semibold text-slate-800 italic leading-relaxed">
-            "The LORD bless you and keep you; the LORD make His face shine upon you and be gracious to you; the LORD turn His face toward you and give you peace."
+            &quot;The LORD bless you and keep you; the LORD make His face shine upon you and be gracious to you; the LORD turn His face toward you and give you peace.&quot;
           </p>
           <p className="text-[11px] font-extrabold text-indigo-700 text-right uppercase tracking-wider">
             — Numbers 6:24-26

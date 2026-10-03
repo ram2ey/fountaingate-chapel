@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { can, routeCapabilities } from '../../lib/auth/permissions';
 import { useChurch } from '../../lib/context/ChurchContext';
 
 export const Sidebar: React.FC = () => {
@@ -47,7 +48,7 @@ export const Sidebar: React.FC = () => {
           </div>
 
           {NAV_ITEMS.map((item) => {
-            const isAllowed = item.roles.includes(currentRole);
+            const isAllowed = can(currentRole, routeCapabilities[item.href] || 'kiosk');
             const isActive = pathname === item.href;
 
             if (!isAllowed) return null;
@@ -80,8 +81,8 @@ export const Sidebar: React.FC = () => {
           <span className="text-[10px] font-bold uppercase text-slate-400">Active User</span>
           <span className="text-[10px] font-bold text-indigo-700 uppercase">{currentRole}</span>
         </div>
-        <p className="font-bold text-slate-900 text-xs truncate">{currentUser?.full_name || 'FGC Leader'}</p>
-        <p className="text-[10px] text-slate-500 mt-0.5">{currentUser?.phone || '+233 244 000 111'}</p>
+        <p className="font-bold text-slate-900 text-xs truncate">{currentUser?.full_name || 'Not signed in'}</p>
+        {currentUser?.phone && <p className="text-[10px] text-slate-500 mt-0.5">{currentUser.phone}</p>}
       </div>
     </aside>
   );

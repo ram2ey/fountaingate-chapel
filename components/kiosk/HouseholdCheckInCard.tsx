@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Member } from '../../lib/types/church';
-import { Users, UserCheck, CheckCircle2, Heart } from 'lucide-react';
+import { Users, UserCheck, CheckCircle2 } from 'lucide-react';
 
 interface Props {
   primaryMember: Member;

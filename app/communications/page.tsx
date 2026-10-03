@@ -1,31 +1,11 @@
-'use client';
-
-import React, { useState } from 'react';
-import { BroadcastComposer } from '../../components/comms/BroadcastComposer';
-import { TemplateLibrary } from '../../components/comms/TemplateLibrary';
-
-export default function CommunicationsPage() {
-  const [selectedTemplateText, setSelectedTemplateText] = useState('');
-
-  return (
-    <div className="space-y-6 pb-8">
-      <div>
-        <h1 className="font-display font-bold text-2xl sm:text-3xl text-slate-900">
-          WhatsApp & SMS Communications
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Direct messaging dispatch center for sanctuary announcements and guest follow-up.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <BroadcastComposer initialMessage={selectedTemplateText} />
-        </div>
-        <div>
-          <TemplateLibrary onSelectTemplate={(text) => setSelectedTemplateText(text)} />
-        </div>
-      </div>
-    </div>
-  );
+import PageContent from './page-content';
+import { requirePageAccess } from '../../lib/server/page-access';
+import { UnavailableState } from '../../components/common/UnavailableState';
+export default async function Page(){
+ let status: 'ready'|'denied'|'unavailable'='unavailable';
+ try { status=await requirePageAccess('care')?'ready':'denied'; }
+ catch(error) { if(error instanceof Error && 'digest' in error)throw error; }
+ if(status==='denied')return <UnavailableState title="Access denied" description="Your account does not have permission to view this page."/>;
+ if(status==='unavailable')return <UnavailableState title="Portal temporarily unavailable" description="Please try again later."/>;
+ return <PageContent/>;
 }

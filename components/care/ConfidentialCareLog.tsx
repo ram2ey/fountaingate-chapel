@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
 
 export const ConfidentialCareLog: React.FC = () => {
-  const { members, careNotes, addCareNote } = useChurch();
+  const { members, careNotes, addCareNote, currentUser } = useChurch();
 
   const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id || '');
   const [noteText, setNoteText] = useState('');
@@ -13,15 +13,15 @@ export const ConfidentialCareLog: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMemberId || !noteText) return;
+    if (!currentUser || !selectedMemberId || !noteText) return;
 
     const member = members.find(m => m.id === selectedMemberId);
 
     addCareNote({
       member_id: selectedMemberId,
       member_name: member ? `${member.first_name} ${member.last_name}` : 'Member',
-      pastor_id: 'p-001',
-      pastor_name: 'Rev. Eastwood Anaba',
+      pastor_id: currentUser.id,
+      pastor_name: currentUser.full_name,
       note: noteText,
       is_confidential: isConfidential,
       action_item: actionItem || undefined
@@ -37,7 +37,7 @@ export const ConfidentialCareLog: React.FC = () => {
         <div className="flex items-center justify-between">
           <h4 className="font-display font-bold text-base text-slate-900">Confidential Pastoral Counseling Log</h4>
           <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold border border-rose-200">
-            Encrypted Pastoral View
+            Pastoral Care
           </span>
         </div>
         <p className="text-xs text-slate-500">Record visitation records, counseling notes, and prayer requests.</p>

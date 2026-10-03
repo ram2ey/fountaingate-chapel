@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.npm-cache
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.tsbuildinfo
+audit
+coverage
+uploads
+backups
+.codex
+.agents
+*.log

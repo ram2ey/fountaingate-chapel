@@ -1,0 +1,7 @@
+CONFIRMED: incorrect password authenticates the seeded admin.
+CONFIRMED: non-digit phone normalizes to empty string and matches the first admin.
+CONFIRMED: unknown phone is automatically authenticated as a member.
+CONFIRMED: contribution mutation accepts a negative amount.
+CONFIRMED: offline sync discards original attendance date and clears queue without a server acknowledgement.
+CONFIRMED: changing the current user role does not revoke the active admin role.
+CONFIRMED: provider remount loses newly created member records.

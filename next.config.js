@@ -1,9 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  images: {
-    domains: ['images.unsplash.com', 'facebook.com', 'via.placeholder.com'],
-  },
+  output: 'standalone',
 };
 
 module.exports = nextConfig;

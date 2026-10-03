@@ -50,7 +50,7 @@ export const RapidCheckInModal: React.FC<Props> = ({ onClose }) => {
               <label className="block text-slate-700 font-bold mb-1">Select Service / Meeting *</label>
               <select
                 value={eventType}
-                onChange={(e) => setEventType(e.target.value as any)}
+                onChange={(e) => setEventType(e.target.value as typeof eventType)}
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
               >
                 <option value="Sunday Service">Sunday Main Service</option>

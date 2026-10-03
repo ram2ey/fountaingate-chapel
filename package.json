@@ -4,28 +4,45 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit --incremental false",
+    "test": "node --test tests/phase-1-1.cjs tests/phase-1.cjs tests/phase-2.cjs tests/auth-integration.cjs",
+    "test:phase1.1": "node tests/phase-1-1.cjs",
+    "db:migrate": "node scripts/migrate.cjs",
+    "db:check": "node scripts/db-check.cjs",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "test:phase2": "node --test tests/phase-2.cjs",
+    "auth:bootstrap-invite": "node scripts/bootstrap-invite.cjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.4",
-    "clsx": "^2.1.1",
-    "jspdf": "^2.5.2",
+    "@node-rs/argon2": "^2.2.1",
+    "libphonenumber-js": "^1.13.14",
     "lucide-react": "^0.453.0",
-    "next": "14.2.15",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "recharts": "^2.13.0",
-    "tailwind-merge": "^2.5.4"
+    "next": "16.3.8",
+    "otpauth": "^9.5.2",
+    "pg": "8.23.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
-    "@types/node": "^20.17.0",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.14",
-    "typescript": "^5.6.3"
+    "@electric-sql/pglite": "^0.5.8",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "^24.0.0",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.8",
+    "tailwindcss": "4.3.3",
+    "typescript": "~5.9.3"
+  },
+  "engines": {
+    "node": ">=24 <27"
+  },
+  "overrides": {
+    "nanoid": "^3.3.19"
   }
 }

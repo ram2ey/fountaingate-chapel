@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useChurch } from '../../lib/context/ChurchContext';
 import { PrayerRequest, PrayerStatus } from '../../lib/types/church';
 
@@ -21,7 +21,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
 
   const isPastorOrAdmin = currentRole === 'admin' || currentRole === 'pastor';
 
-  // Spam-guard: track prayed request IDs in sessionStorage
+  // Server-side rate limiting and durable prayer state will be added with the backend.
   const [hasPrayed, setHasPrayed] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [showUpdateBox, setShowUpdateBox] = useState(false);
@@ -29,17 +29,11 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
   const [updateText, setUpdateText] = useState('');
   const [showThread, setShowThread] = useState(false);
 
-  useEffect(() => {
-    const prayed = JSON.parse(sessionStorage.getItem('fgc_prayed_ids') || '[]');
-    setHasPrayed(prayed.includes(request.id));
-  }, [request.id]);
 
   const handlePray = () => {
     if (hasPrayed) return;
     incrementPrayerCount(request.id);
-    const prayed = JSON.parse(sessionStorage.getItem('fgc_prayed_ids') || '[]');
-    prayed.push(request.id);
-    sessionStorage.setItem('fgc_prayed_ids', JSON.stringify(prayed));
+
     setHasPrayed(true);
   };
 
@@ -122,7 +116,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
         {/* Scripture Reference Block */}
         {request.scripture_reference && (
           <div className="px-3 py-2 rounded-xl bg-indigo-50/70 border-l-4 border-indigo-400 text-xs text-indigo-800 font-semibold italic">
-            📖 "{request.scripture_reference}"
+            📖 &quot;{request.scripture_reference}&quot;
           </div>
         )}
 

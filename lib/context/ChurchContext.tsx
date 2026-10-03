@@ -1,44 +1,18 @@
 'use client';
+import { useRouter } from 'next/navigation';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  Member, 
-  UserRole, 
-  AttendanceLog, 
-  CareNote, 
-  Sermon, 
-  Contribution, 
-  Broadcast,
-  GuestRetentionItem,
-  SystemUser,
-  AuditLog,
-  PrayerRequest,
-  PrayerComment,
-  PrayerUpdate,
-  PrayerStatus,
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import type {
+  Member, UserRole, CareNote, Sermon, Contribution, Broadcast,
+  GuestRetentionItem, SystemUser, AuditLog, PrayerRequest, PrayerStatus,
   PastoralDocument
 } from '../types/church';
-
-import { 
-  INITIAL_SYSTEM_USERS,
-  INITIAL_MEMBERS, 
-  INITIAL_SERMONS, 
-  INITIAL_CONTRIBUTIONS, 
-  INITIAL_CARE_NOTES, 
-  INITIAL_BROADCASTS,
-  INITIAL_GUEST_RETENTION,
-  INITIAL_AUDIT_LOGS,
-  INITIAL_PRAYER_REQUESTS,
-  INITIAL_PASTORAL_DOCUMENTS
-} from '../store/churchStore';
 
 interface ChurchContextType {
   currentUser: SystemUser | null;
   updateCurrentUser: (updates: Partial<SystemUser>) => void;
-  loginWithPhone: (phone: string, pass: string) => boolean;
-  logout: () => void;
+  logout: () => Promise<void>;
   currentRole: UserRole;
-  setCurrentRole: (role: UserRole) => void;
   systemUsers: SystemUser[];
   addUser: (user: Omit<SystemUser, 'id' | 'created_at'>) => void;
   updateUserRole: (userId: string, newRole: UserRole) => void;
@@ -82,396 +56,84 @@ interface ChurchContextType {
 
 const ChurchContext = createContext<ChurchContextType | undefined>(undefined);
 
-export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [systemUsers, setSystemUsers] = useState<SystemUser[]>(INITIAL_SYSTEM_USERS);
-  const [currentUser, setCurrentUser] = useState<SystemUser | null>(null);
-  const [currentRole, setCurrentRole] = useState<UserRole>('member');
+// Replace each operation with its verified backend service in later phases.
+// Rejecting here prevents unfinished consumers from claiming successful writes.
+const unavailableOperation = (): never => {
+  throw new Error('This operation is unavailable until its backend service is implemented.');
+};
 
-  const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
-  const [sermons, setSermons] = useState<Sermon[]>(INITIAL_SERMONS);
-  const [contributions, setContributions] = useState<Contribution[]>(INITIAL_CONTRIBUTIONS);
-  const [careNotes, setCareNotes] = useState<CareNote[]>(INITIAL_CARE_NOTES);
-  const [broadcasts, setBroadcasts] = useState<Broadcast[]>(INITIAL_BROADCASTS);
-  const [guestRetention, setGuestRetention] = useState<GuestRetentionItem[]>(INITIAL_GUEST_RETENTION);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
-  const [prayerRequests, setPrayerRequests] = useState<PrayerRequest[]>(INITIAL_PRAYER_REQUESTS);
-  const [pastoralDocuments, setPastoralDocuments] = useState<PastoralDocument[]>(INITIAL_PASTORAL_DOCUMENTS);
-
-  const [isOnline, setIsOnline] = useState(true);
-  const [pendingOfflineCount, setPendingOfflineCount] = useState(0);
-  const [isLive, setIsLive] = useState(false);
+export const ChurchProvider: React.FC<{ children: React.ReactNode; initialUser?: SystemUser | null }> = ({ children, initialUser = null }) => {
+  const router=useRouter();
+  const [isOnline, setIsOnline] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Network Status
   useEffect(() => {
-    const updateOnlineStatus = () => {
-      setIsOnline(navigator.onLine);
-      const cached = localStorage.getItem('fgc_kiosk_offline_checkins');
-      if (cached) {
-        try {
-          const list = JSON.parse(cached);
-          setPendingOfflineCount(list.length);
-        } catch (e) {
-          setPendingOfflineCount(0);
-        }
-      }
-    };
-
+    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
     updateOnlineStatus();
-
     return () => {
       window.removeEventListener('online', updateOnlineStatus);
       window.removeEventListener('offline', updateOnlineStatus);
     };
   }, []);
 
-  const addAuditLog = (action: string, details: string) => {
-    const newLog: AuditLog = {
-      id: `al-${Date.now()}`,
-      user_phone: currentUser?.phone || 'System',
-      user_name: currentUser?.full_name || 'System User',
-      action,
-      details,
-      created_at: new Date().toLocaleString()
-    };
-    setAuditLogs(prev => [newLog, ...prev]);
-  };
+  const value = useMemo<ChurchContextType>(() => ({
+    currentUser: initialUser,
+    currentRole: initialUser?.role || 'member',
+    systemUsers: [],
+    members: [],
+    sermons: [],
+    contributions: [],
+    careNotes: [],
+    broadcasts: [],
+    guestRetention: [],
+    auditLogs: [],
+    prayerRequests: [],
+    pastoralDocuments: [],
+    updateCurrentUser: unavailableOperation,
+    logout: async () => {
+      const response = await fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      if (!response.ok) throw new Error('Sign-out failed. Please retry.');
+      router.push('/login');router.refresh();
+    },
+    addUser: unavailableOperation,
+    updateUserRole: unavailableOperation,
+    addMember: unavailableOperation,
+    updateMember: unavailableOperation,
+    deleteMember: unavailableOperation,
+    addSermon: unavailableOperation,
+    toggleLiveSermon: unavailableOperation,
+    addContribution: unavailableOperation,
+    addCareNote: unavailableOperation,
+    sendBroadcast: unavailableOperation,
+    updateGuestRetention: unavailableOperation,
+    recordAttendance: unavailableOperation,
+    addAuditLog: unavailableOperation,
+    addPrayerRequest: unavailableOperation,
+    incrementPrayerCount: unavailableOperation,
+    updatePrayerStatus: unavailableOperation,
+    deletePrayerRequest: unavailableOperation,
+    addPrayerComment: unavailableOperation,
+    addPrayerUpdate: unavailableOperation,
+    addPastoralDocument: unavailableOperation,
+    updatePastoralDocument: unavailableOperation,
+    deletePastoralDocument: unavailableOperation,
+    syncOfflineCheckIns: unavailableOperation,
+    setIsLive: unavailableOperation,
+    // Preserve any legacy offline queue until acknowledged synchronization exists.
+    pendingOfflineCount: 0,
+    isOnline,
+    isLive: false,
+    searchQuery,
+    setSearchQuery,
+  }), [isOnline, searchQuery, initialUser, router]);
 
-  const normalizePhone = (phoneStr: string) => {
-    let digits = phoneStr.replace(/[^0-9]/g, '');
-    if (digits.startsWith('0') && digits.length === 10) {
-      digits = '233' + digits.substring(1);
-    }
-    return digits;
-  };
-
-  const loginWithPhone = (phone: string, pass: string): boolean => {
-    const cleanInput = normalizePhone(phone);
-    const user = systemUsers.find(u => {
-      const uPhone = normalizePhone(u.phone);
-      return uPhone === cleanInput || uPhone.endsWith(cleanInput) || cleanInput.endsWith(uPhone);
-    });
-    
-    if (user) {
-      setCurrentUser(user);
-      setCurrentRole(user.role);
-      addAuditLog('LOGIN', `User ${user.full_name} signed in as ${user.role} with phone ${phone}`);
-      return true;
-    }
-
-    // Default member sign in
-    const newUser: SystemUser = {
-      id: `u-${Date.now()}`,
-      phone,
-      full_name: 'Church Member',
-      role: 'member',
-      created_at: new Date().toISOString().split('T')[0]
-    };
-    setCurrentUser(newUser);
-    setCurrentRole('member');
-    addAuditLog('LOGIN', `Member logged in with phone ${phone}`);
-    return true;
-  };
-
-  const updateCurrentUser = (updates: Partial<SystemUser>) => {
-    if (currentUser) {
-      const updated = { ...currentUser, ...updates };
-      setCurrentUser(updated);
-      setSystemUsers(prev => prev.map(u => u.id === currentUser.id ? updated : u));
-      addAuditLog('UPDATE_PROFILE', `User ${updated.full_name} updated profile details`);
-    }
-  };
-
-  const logout = () => {
-    if (currentUser) {
-      addAuditLog('LOGOUT', `User ${currentUser.full_name} logged out`);
-    }
-    setCurrentUser(null);
-    setCurrentRole('member');
-  };
-
-  const addUser = (user: Omit<SystemUser, 'id' | 'created_at'>) => {
-    const newUser: SystemUser = {
-      ...user,
-      id: `u-${Date.now()}`,
-      created_at: new Date().toISOString().split('T')[0]
-    };
-    setSystemUsers(prev => [...prev, newUser]);
-    addAuditLog('CREATE_USER', `Added new user ${user.full_name} (${user.role})`);
-  };
-
-  const updateUserRole = (userId: string, newRole: UserRole) => {
-    setSystemUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
-    addAuditLog('UPDATE_ROLE', `Updated user role to ${newRole}`);
-  };
-
-  const addMember = (newMemberData: Omit<Member, 'id' | 'consecutive_absences' | 'last_attended_at' | 'first_visited_at'>) => {
-    const today = new Date().toISOString().split('T')[0];
-    const newMember: Member = {
-      ...newMemberData,
-      id: `m-${Date.now()}`,
-      consecutive_absences: 0,
-      first_visited_at: today,
-      last_attended_at: today
-    };
-
-    setMembers(prev => [newMember, ...prev]);
-
-    if (newMember.status === 'first_time_guest') {
-      setGuestRetention(prev => [
-        {
-          id: `gr-${Date.now()}`,
-          member_id: newMember.id,
-          guest_name: `${newMember.first_name} ${newMember.last_name}`,
-          phone: newMember.phone,
-          first_visited_at: today,
-          stage: 'Intake',
-          notes: 'Registered via Connect Card'
-        },
-        ...prev
-      ]);
-    }
-
-    addAuditLog('ADD_MEMBER', `Registered member ${newMember.first_name} ${newMember.last_name}`);
-  };
-
-  const updateMember = (id: string, updates: Partial<Member>) => {
-    setMembers(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
-    addAuditLog('UPDATE_MEMBER', `Updated member record`);
-  };
-
-  const deleteMember = (id: string) => {
-    setMembers(prev => prev.filter(m => m.id !== id));
-    addAuditLog('DELETE_MEMBER', `Deleted member record`);
-  };
-
-  const recordAttendance = (memberIds: string[], eventType: 'Sunday Service' | 'Mid-week Cell' | 'Night Vigil') => {
-    const today = new Date().toISOString().split('T')[0];
-
-    if (!isOnline) {
-      const cached = localStorage.getItem('fgc_kiosk_offline_checkins') || '[]';
-      try {
-        const list = JSON.parse(cached);
-        list.push({ memberIds, eventType, timestamp: new Date().toISOString() });
-        localStorage.setItem('fgc_kiosk_offline_checkins', JSON.stringify(list));
-        setPendingOfflineCount(list.length);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    setMembers(prev => prev.map(m => {
-      if (memberIds.includes(m.id)) {
-        return {
-          ...m,
-          last_attended_at: today,
-          consecutive_absences: 0,
-          status: m.status === 'at_risk' ? 'active' : m.status
-        };
-      }
-      return m;
-    }));
-
-    addAuditLog('ATTENDANCE_CHECKIN', `Recorded ${eventType} for ${memberIds.length} members`);
-  };
-
-  const syncOfflineCheckIns = () => {
-    const cached = localStorage.getItem('fgc_kiosk_offline_checkins');
-    if (!cached) return;
-
-    try {
-      const list = JSON.parse(cached);
-      list.forEach((item: any) => {
-        recordAttendance(item.memberIds, item.eventType);
-      });
-      localStorage.removeItem('fgc_kiosk_offline_checkins');
-      setPendingOfflineCount(0);
-      addAuditLog('OFFLINE_SYNC', `Synced ${list.length} offline check-ins`);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const addSermon = (newSermon: Omit<Sermon, 'id' | 'views_count'>) => {
-    const sermon: Sermon = {
-      ...newSermon,
-      id: `s-${Date.now()}`,
-      views_count: 0
-    };
-    setSermons(prev => [sermon, ...prev]);
-    addAuditLog('ADD_SERMON', `Uploaded sermon message ${sermon.title}`);
-  };
-
-  const toggleLiveSermon = (sermonId: string) => {
-    setSermons(prev => prev.map(s => s.id === sermonId ? { ...s, is_live: !s.is_live } : s));
-  };
-
-  const addContribution = (newContrib: Omit<Contribution, 'id'>) => {
-    const contrib: Contribution = {
-      ...newContrib,
-      id: `c-${Date.now()}`
-    };
-    setContributions(prev => [contrib, ...prev]);
-    addAuditLog('RECORD_GIVING', `Recorded ${newContrib.type} of GHS ${newContrib.amount}`);
-  };
-
-  const addCareNote = (newNote: Omit<CareNote, 'id' | 'created_at'>) => {
-    const note: CareNote = {
-      ...newNote,
-      id: `cn-${Date.now()}`,
-      created_at: new Date().toISOString().split('T')[0]
-    };
-    setCareNotes(prev => [note, ...prev]);
-    addAuditLog('CARE_NOTE', `Logged pastoral care note for ${newNote.member_name}`);
-  };
-
-  const sendBroadcast = (newBroadcast: Omit<Broadcast, 'id' | 'created_at'>) => {
-    const b: Broadcast = {
-      ...newBroadcast,
-      id: `b-${Date.now()}`,
-      created_at: new Date().toISOString().split('T')[0]
-    };
-    setBroadcasts(prev => [b, ...prev]);
-    addAuditLog('SEND_BROADCAST', `Dispatched ${newBroadcast.channel} broadcast to ${newBroadcast.target_group}`);
-  };
-
-  const updateGuestRetention = (id: string, updates: Partial<GuestRetentionItem>) => {
-    setGuestRetention(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
-  };
-
-  const addPrayerRequest = (newRequest: Omit<PrayerRequest, 'id' | 'status' | 'prayed_count' | 'created_at' | 'comments' | 'updates'>) => {
-    const request: PrayerRequest = {
-      ...newRequest,
-      id: `pr-${Date.now()}`,
-      status: 'active',
-      prayed_count: 1,
-      comments: [],
-      updates: [],
-      created_at: new Date().toISOString().split('T')[0]
-    };
-    setPrayerRequests(prev => [request, ...prev]);
-    addAuditLog('SUBMIT_PRAYER', `Submitted prayer request "${request.title}"`);
-  };
-
-  const incrementPrayerCount = (id: string) => {
-    setPrayerRequests(prev => prev.map(p => p.id === id ? { ...p, prayed_count: p.prayed_count + 1 } : p));
-  };
-
-  const updatePrayerStatus = (id: string, status: PrayerStatus) => {
-    setPrayerRequests(prev => prev.map(p => p.id === id ? { ...p, status } : p));
-    addAuditLog('UPDATE_PRAYER_STATUS', `Updated prayer status to ${status}`);
-  };
-
-  const deletePrayerRequest = (id: string) => {
-    setPrayerRequests(prev => prev.filter(p => p.id !== id));
-    addAuditLog('DELETE_PRAYER', `Deleted prayer request`);
-  };
-
-  const addPrayerComment = (requestId: string, text: string, authorName: string) => {
-    const comment: PrayerComment = {
-      id: `cmt-${Date.now()}`,
-      author_name: authorName,
-      text,
-      created_at: new Date().toISOString().split('T')[0]
-    };
-    setPrayerRequests(prev => prev.map(p =>
-      p.id === requestId ? { ...p, comments: [...p.comments, comment] } : p
-    ));
-  };
-
-  const addPrayerUpdate = (requestId: string, text: string, authorName: string) => {
-    const update: PrayerUpdate = {
-      id: `upd-${Date.now()}`,
-      author_name: authorName,
-      text,
-      created_at: new Date().toISOString().split('T')[0]
-    };
-    setPrayerRequests(prev => prev.map(p =>
-      p.id === requestId ? { ...p, updates: [...p.updates, update] } : p
-    ));
-  };
-
-  const addPastoralDocument = (newDoc: Omit<PastoralDocument, 'id' | 'created_at' | 'last_edited_at'>) => {
-    const doc: PastoralDocument = {
-      ...newDoc,
-      id: `doc-${Date.now()}`,
-      last_edited_at: 'Just now',
-      created_at: new Date().toISOString().split('T')[0]
-    };
-    setPastoralDocuments(prev => [doc, ...prev]);
-    addAuditLog('CREATE_DOCUMENT', `Uploaded pastoral document "${doc.title}" (${doc.file_type.toUpperCase()})`);
-  };
-
-  const updatePastoralDocument = (id: string, updates: Partial<PastoralDocument>) => {
-    setPastoralDocuments(prev => prev.map(d =>
-      d.id === id ? { ...d, ...updates, last_edited_at: 'Just now' } : d
-    ));
-  };
-
-  const deletePastoralDocument = (id: string) => {
-    setPastoralDocuments(prev => prev.filter(d => d.id !== id));
-    addAuditLog('DELETE_DOCUMENT', `Deleted pastoral document`);
-  };
-
-  return (
-    <ChurchContext.Provider value={{
-      currentUser,
-      updateCurrentUser,
-      loginWithPhone,
-      logout,
-      currentRole,
-      setCurrentRole,
-      systemUsers,
-      addUser,
-      updateUserRole,
-      members,
-      addMember,
-      updateMember,
-      deleteMember,
-      sermons,
-      addSermon,
-      toggleLiveSermon,
-      contributions,
-      addContribution,
-      careNotes,
-      addCareNote,
-      broadcasts,
-      sendBroadcast,
-      guestRetention,
-      updateGuestRetention,
-      recordAttendance,
-      auditLogs,
-      addAuditLog,
-      prayerRequests,
-      addPrayerRequest,
-      incrementPrayerCount,
-      updatePrayerStatus,
-      deletePrayerRequest,
-      addPrayerComment,
-      addPrayerUpdate,
-      pastoralDocuments,
-      addPastoralDocument,
-      updatePastoralDocument,
-      deletePastoralDocument,
-      pendingOfflineCount,
-      syncOfflineCheckIns,
-      isOnline,
-      isLive,
-      setIsLive,
-      searchQuery,
-      setSearchQuery
-    }}>
-      {children}
-    </ChurchContext.Provider>
-  );
+  return <ChurchContext.Provider value={value}>{children}</ChurchContext.Provider>;
 };
 
 export const useChurch = () => {
   const context = useContext(ChurchContext);
-  if (!context) {
-    throw new Error('useChurch must be used within a ChurchProvider');
-  }
+  if (!context) throw new Error('useChurch must be used within a ChurchProvider');
   return context;
 };

@@ -16,7 +16,7 @@ export const AddMemberModal: React.FC<Props> = ({ onClose }) => {
   const [email, setEmail] = useState('');
   const [cellGroup, setCellGroup] = useState('Victory Cell');
   const [dob, setDob] = useState('');
-  const [address, setAddress] = useState('');
+  const [address] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

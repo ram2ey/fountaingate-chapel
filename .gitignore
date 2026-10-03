@@ -26,6 +26,11 @@ pnpm-debug.log*
 # local env files
 .env*.local
 .env
+.env.*
+!.env.example
+.npm-cache/
+uploads/
+backups/
 
 # vercel
 .vercel/
