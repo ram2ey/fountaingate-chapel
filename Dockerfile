@@ -17,6 +17,10 @@ COPY db ./db
 USER node
 CMD ["node", "scripts/migrate.cjs"]
 
+# A running private resource for Coolify scheduled commands.
+FROM maintenance AS attendance-scheduler
+CMD ["node", "scripts/maintenance-host.cjs"]
+
 FROM node:24-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0

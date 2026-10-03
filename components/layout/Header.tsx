@@ -21,6 +21,7 @@ export const Header: React.FC = () => {
 
   const NAV_ITEMS = [
     { label: 'Dashboard Overview', href: '/', roles: ['admin', 'pastor', 'member'] },
+    { label: 'Services & Attendance', href: '/attendance', roles: ['admin', 'pastor'] },
     { label: 'Member Directory', href: '/members', roles: ['admin', 'pastor', 'member'] },
     { label: 'Online Giving & Tithe', href: '/giving', roles: ['admin', 'pastor', 'member'] },
     { label: 'Pastoral Care & At-Risk', href: '/pastoral-care', badge: atRiskCount > 0 ? atRiskCount : undefined, roles: ['admin', 'pastor'] },

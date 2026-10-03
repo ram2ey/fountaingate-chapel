@@ -154,6 +154,50 @@ test('real auth handlers persist accounts, verify phones, change credentials and
   const {nextBirthday}=require('../lib/server/core-validation.ts');assert.equal(nextBirthday('2000-02-29','2027-03-01'),'2028-02-29');assert.equal(nextBirthday('2000-02-29','2027-01-01'),'2027-02-28');
   await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);
   await assert.rejects(core.readCore('members',new URL('https://church.test/api/core/members')),/Access denied/);
+  // Phase 4 uses the same verified identity and actual PostgreSQL roles.
+  const attendance=require('../lib/server/attendance-service.ts');
+  await db.query("UPDATE identity.memberships SET role='pastor' WHERE user_id=$1",[uid]);
+  await attendance.writeAttendance({action:'eligibility',member_id:added.id,expected_from:'2020-01-01T00:00:00Z',expected_until:''});
+  const historic=[];
+  for(let i=4;i>=1;i--){
+   const end=new Date(Date.now()-i*86400000).toISOString(),start=new Date(Date.parse(end)-3600000).toISOString();
+   historic.push({...(await attendance.writeAttendance({action:'service',name:'History '+i,event_type:'service',cell_group:'',starts_at:start,ends_at:end,attendance_eligible:true})),start,end});
+  }
+  await assert.rejects(transaction('fgc_runtime')(client=>client.query('SELECT identity.reconcile_attendance(100)')),/permission denied/);
+  assert.equal((await db.query('SELECT identity.reconcile_attendance(2) AS n')).rows[0].n,2);
+  assert.equal((await db.query('SELECT consecutive_absences FROM public.members WHERE id=$1',[added.id])).rows[0].consecutive_absences,2);
+  assert.equal((await db.query('SELECT identity.reconcile_attendance(1) AS n')).rows[0].n,1);
+  assert.equal((await db.query('SELECT status FROM public.members WHERE id=$1',[added.id])).rows[0].status,'at_risk');
+  assert.equal((await db.query('SELECT identity.reconcile_attendance(100) AS n')).rows[0].n,1);
+  assert.equal((await db.query('SELECT identity.reconcile_attendance(100) AS n')).rows[0].n,0);
+  let riskMember=(await db.query('SELECT consecutive_absences,status FROM public.members WHERE id=$1',[added.id])).rows[0];assert.equal(riskMember.consecutive_absences,4);assert.equal(riskMember.status,'at_risk');
+  const operation=require('node:crypto').randomUUID();const correction={action:'record',operation_id:operation,service_id:historic.at(-1).id,member_id:added.id,state:'excused',reason:'Test correction with real audit',recorded_at:historic.at(-1).start};
+  const corrected=await attendance.writeAttendance(correction);assert.equal((await attendance.writeAttendance(correction)).id,corrected.id);
+  await assert.rejects(attendance.writeAttendance({...correction,state:'present'}),/conflicts/);
+  riskMember=(await db.query('SELECT consecutive_absences,status FROM public.members WHERE id=$1',[added.id])).rows[0];assert.equal(riskMember.consecutive_absences,0);assert.equal(riskMember.status,'active');
+  const analytics=await attendance.readAttendance('analytics',null);assert.equal(analytics.services.length,4);assert.equal(analytics.average,0);assert.equal(analytics.services[0].excused,1);
+  assert.equal((await db.query('SELECT count(*)::integer AS n FROM public.audit_events WHERE entity_id=$1 AND actor_id=$2',[corrected.id,uid])).rows[0].n,1);
+  await assert.rejects(attendance.writeAttendance({...correction,operation_id:require('node:crypto').randomUUID(),recorded_at:'2030-01-01T00:00:00Z'}),/Recorded time/);
+  const household=await attendance.writeAttendance({action:'household',name:'Explicit fixture household'});await attendance.writeAttendance({action:'household_member',member_id:added.id,household_id:household.id});
+  assert.equal((await attendance.readAttendance('households',null)).items[0].member_id,added.id);
+  // Simulate a next-day upload using persisted token/service timestamps, not a production clock bypass.
+  const liveDevice=await (await kioskCall('device',{name:'Offline fixture device'})).json();
+  const offlineService=historic[0].id,offlineToken=newToken(),recorded=historic[0].start;
+  await db.query("INSERT INTO identity.tokens(token_hash,user_id,purpose,branch_id,service_id,created_at,expires_at) VALUES($1,$2,'kiosk_lookup',$3,$4,$5::timestamptz-interval '1 minute',$5::timestamptz+interval '4 minutes')",[tokenDigest(offlineToken),uid,branch,offlineService,recorded]);
+  const queued={operation_id:require('node:crypto').randomUUID(),service_id:offlineService,recorded_at:recorded,token:offlineToken};
+  const uploaded=await kioskCall('upload',queued,liveDevice.token);assert.equal(uploaded.status,200);const ack=await uploaded.json();assert.equal(ack.operation_id,queued.operation_id);
+  assert.equal((await kioskCall('upload',queued,liveDevice.token)).status,200);
+  assert.equal((await kioskCall('upload',{...queued,operation_id:require('node:crypto').randomUUID()},liveDevice.token)).status,422);
+  assert.equal((await db.query('SELECT recorded_at FROM public.attendance WHERE id=$1',[ack.id])).rows[0].recorded_at.toISOString(),recorded);
+  await kioskCall('revoke',{device_id:liveDevice.id});assert.equal((await kioskCall('upload',queued,liveDevice.token)).status,401);
+  // New accounts are not expected retrospectively, and cell membership is exact.
+  const ownMember=(await db.query('SELECT id FROM public.members WHERE profile_id=$1',[uid])).rows[0].id;
+  assert.equal((await db.query('SELECT count(*)::integer AS n FROM public.service_expectations WHERE member_id=$1',[ownMember])).rows[0].n,0);
+  const cellEnd=new Date(Date.now()-6*3600000).toISOString(),cellStart=new Date(Date.parse(cellEnd)-3600000).toISOString();
+  const cell=await attendance.writeAttendance({action:'service',name:'Different cell',event_type:'cell',cell_group:'Unrelated',starts_at:cellStart,ends_at:cellEnd,attendance_eligible:true});
+  await db.query('SELECT identity.reconcile_attendance(100)');assert.equal((await db.query('SELECT count(*)::integer AS n FROM public.service_expectations WHERE service_id=$1',[cell.id])).rows[0].n,0);
+  await assert.rejects(attendance.writeAttendance({action:'service',name:'Impossible date',event_type:'service',starts_at:'2026-02-31T10:00:00Z',ends_at:'2026-03-04T10:00:00Z',attendance_eligible:true}),/Invalid date/);
+  await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);await assert.rejects(attendance.readAttendance('analytics',null),/Access denied/);assert.ok((await attendance.readAttendance('personal',null)).items.length);
   await db.exec('DELETE FROM identity.rate_limits');
   for(let i=0;i<10;i++)assert.equal((await call('login',{phone,password:'wrong',branch_id:branch})).status,401);
   assert.equal((await call('login',{phone,password:'a recovered long password',branch_id:branch})).status,429);

@@ -1,8 +1,10 @@
 # Fountain Gate Chapel
 
-Phases 2–3 add PostgreSQL-backed accounts, server authorization and core member, profile, care, guest and prayer workflows. No demo mode or seeded account exists. Attendance analytics, payments, messaging campaigns and media integrations remain later phases.
+Phases 2–4 add PostgreSQL-backed accounts, core church workflows, dated attendance, offline kiosk synchronization and attendance analytics. No demo mode or seeded account exists. Payments, messaging campaigns and media integrations remain later phases.
 
 Read [Phase 2 setup](docs/PHASE-2-SETUP.md), [permission matrix](docs/AUTHORIZATION.md) and [Coolify runbook](docs/COOLIFY.md).
+
+For services, kiosk devices and the attendance maintenance schedule, follow [Phase 4 setup](docs/PHASE-4-SETUP.md).
 
 ## Current status
 

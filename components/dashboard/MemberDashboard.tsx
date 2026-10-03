@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { MemberAttendance } from '../attendance/MemberAttendance';
 import { useChurch } from '../../lib/context/ChurchContext';
 
 export const MemberDashboard: React.FC = () => {
@@ -11,6 +12,7 @@ export const MemberDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-8">
+      <MemberAttendance/>
       {/* High-Contrast Welcome & Scripture Banner (No Pill Tag) */}
       <div className="glass-panel p-6 sm:p-8 rounded-none border border-indigo-200 bg-indigo-50/80 shadow-md space-y-3 relative overflow-hidden">
         <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">

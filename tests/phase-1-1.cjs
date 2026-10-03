@@ -91,7 +91,7 @@ try {
   }
   checks++;
 
-  for (const name of ['AttendanceChart', 'MetricsOverview', 'FinancialBreakdownChart']) {
+  for (const name of ['FinancialBreakdownChart']) {
     const Component = require('../components/dashboard/' + name + '.tsx')[name];
     const html = render(React.createElement(Component));
     assert.match(html, /currently unavailable/);

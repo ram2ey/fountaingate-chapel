@@ -1,2 +1,3 @@
 import { CoreWorkspace } from '../../components/core/CoreWorkspace';
-export default function PageContent(){return <CoreWorkspace resource="care"/>;}
+import { AttendanceOverview } from '../../components/attendance/AttendanceOverview';
+export default function PageContent(){return <><AttendanceOverview view="risk"/><CoreWorkspace resource="care"/></>;}

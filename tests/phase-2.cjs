@@ -38,7 +38,7 @@ test('clean PostgreSQL migrations and runtime RLS enforce branch, identity and c
  assert.equal((await asActor('admin',()=>db.query('SELECT * FROM public.documents WHERE id=$1',[privateDoc]))).rows.length,0);
  assert.equal((await asActor('member',()=>db.query('SELECT * FROM public.documents WHERE id=$1',[privateDoc]))).rows.length,0);
  // Missing context cannot select any sensitive domain rows or modify migration history.
- for(const table of ['profiles','households','services','attendance','care_notes','prayers','prayer_comments','prayer_updates','prayer_reactions','guest_followups','followup_tasks','documents','document_versions','notification_preferences','audit_events','contributions']) {
+ for(const table of ['profiles','households','services','attendance','service_expectations','attendance_operations','care_notes','prayers','prayer_comments','prayer_updates','prayer_reactions','guest_followups','followup_tasks','documents','document_versions','notification_preferences','audit_events','contributions']) {
   assert.equal((await asActor('',()=>db.query('SELECT * FROM public.'+table))).rows.length,0,table);
  }
  await assert.rejects(asActor('admin',()=>db.query("INSERT INTO public.schema_migrations VALUES('fake','checksum')")),/permission denied/);

@@ -8,6 +8,7 @@ The browser uses `lib/auth/permissions.ts` for navigation. Every protected page 
 | Own profile/password/preferences | Denied | Own account | Own account | Own account |
 | Member contacts, households, follow-ups | Denied | Own member row only; no directory page | Current branch | Current branch |
 | Services and attendance | Denied | Current-branch services, own attendance | Current branch | Current branch |
+| Attendance corrections/eligibility/households | Denied | Denied | Current branch with audit | Current branch with audit |
 | Care notes | Denied | Denied | Current branch including confidential | Current branch, nonconfidential only |
 | Prayers/comments/reactions | Denied | Own/private or branch-visible; edit own | Current branch, moderation | Own/private or branch-visible; edit own |
 | Public guest intake | Opted-in branch, validated and rate limited | Same | Same | Same |

@@ -160,6 +160,8 @@ Exit checks: records survive reloads and appear on another authorized device; du
 
 ## Phase 4 — Attendance, kiosk synchronization and truthful analytics
 
+Implemented locally on 3 October 2026. Migration 0010 adds completed-service expectations, derived absence streaks and durable check-in receipts. Staff manage services/corrections/households; members receive locally rendered check-in QR codes. The attended kiosk queues in bounded IndexedDB storage and retries only with valid device authorization. Attendance summaries use database records. A private Coolify maintenance resource runs the bounded reconciliation job. See docs/PHASE-4-SETUP.md and audit/phase-4-results.md. Offline availability supports an already loaded tab; no service worker or directory cache is installed. Native PostgreSQL, Coolify scheduling and actual tablet/camera checks remain release gates.
+
 Audit coverage: 10, 11, 18, 23; attendance portion of 24.
 
 Tasks:

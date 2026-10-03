@@ -24,7 +24,7 @@ The web image installs the lockfile, builds Next.js standalone output, includes 
 After deployment:
 
 - `GET /health` returns `200`, JSON `{"status":"ok"}` and `Cache-Control: no-store`.
-- `/login` and `/kiosk` render their real forms. Without runtime configuration, operations fail safely. `/guest-intake` remains unavailable.
+- `/login`, `/kiosk` and `/guest-intake` render their real forms. Without runtime configuration, operations fail safely; guest intake additionally needs branch opt-in.
 - Protected routes redirect anonymous requests to `/login`; verified accounts need the route capability. Unfinished business workflows remain unavailable; no payment confirmation is simulated.
 - Static CSS and `public/manifest.json` load successfully.
 - Redeploy/restart does not erase persistent PostgreSQL or upload data.
@@ -35,11 +35,13 @@ These are liveness/access smoke checks; real identity, database, SMS and file ch
 
 Require the repository's **Checks** workflow to succeed before deployment. Configure Coolify deployment gating appropriately: its automatic Git push deployment must not bypass CI. Initially deploy approved releases manually after checks, or connect an explicitly authorized CI deployment step later.
 
-Build the maintenance image with `docker build --target maintenance`. Supply migration credentials at runtime and run `node scripts/migrate.cjs` once. The current migration folder has no domain SQL and reports that clearly. `node scripts/db-check.cjs` uses the runtime role and rejects elevated/owner roles. Never execute the removed Supabase schema or migrate on every startup.
+Build the maintenance image with `docker build --target maintenance`. Supply migration credentials at runtime and run `node scripts/migrate.cjs` once. The migration folder now contains ten domain/identity/workflow migrations. `node scripts/db-check.cjs` uses the runtime role and rejects elevated/owner roles. Never execute the removed Supabase schema or migrate on every startup.
 
 Production release sequence: confirm backup/restore viability → apply compatible migrations once → deploy matching application/worker images → verify health and core workflows → enable relevant jobs. Keep the previous image/commit and additive schema compatibility for rollback. Destructive schema changes need a later reviewed migration.
 
 ## Workers, schedules and integrations (later phases)
+
+Phase 4 attendance reconciliation is implemented. Deploy the private `attendance-scheduler` target and configure `node scripts/reconcile-attendance.cjs` every five minutes in that running resource. Keep its owner credential out of the web resource. Follow [the detailed attendance setup](PHASE-4-SETUP.md) for staging verification and recovery behavior.
 
 Deploy a separately supervised worker when Phase 6 implements the PostgreSQL outbox. Use durable leases/idempotency and graceful shutdown; web restarts must not lose jobs. Coolify scheduled tasks will run bounded attendance/reminder commands using UTC schedules and explicit church timezone calculations. Their commands must exist in the deployed maintenance/worker image before enabling schedules. Phase 1 does not start pretend workers or schedules.
 
