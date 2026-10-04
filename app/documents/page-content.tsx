@@ -1,5 +1,5 @@
-import { UnavailableState } from '../../components/common/UnavailableState';
+import { DocumentsWorkspace } from '../../components/media/DocumentsWorkspace';
 
 export default function PastoralDocumentsPage() {
-  return <UnavailableState title="Document vault unavailable" description="Document uploads and downloads are currently unavailable." />;
+  return <DocumentsWorkspace/>;
 }

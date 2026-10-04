@@ -55,7 +55,7 @@ try {
 
   // Every unfinished backend operation must fail rather than return fake success.
   for (const [name, value] of Object.entries(context)) {
-    if (typeof value === 'function' && !['setSearchQuery','logout'].includes(name)) {
+    if (typeof value === 'function' && !['setSearchQuery','logout','refreshMedia'].includes(name)) {
       assert.throws(() => value({}), /operation is unavailable/, name);
     }
   }

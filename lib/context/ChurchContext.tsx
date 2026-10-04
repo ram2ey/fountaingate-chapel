@@ -8,7 +8,10 @@ import type {
   PastoralDocument
 } from '../types/church';
 
+export type MediaSettings={live:boolean;live_url:string|null;schedules:{name:string;day:number;time:string}[];revision:number};
 interface ChurchContextType {
+  mediaSettings:MediaSettings|null;
+  refreshMedia:()=>Promise<void>;
   currentUser: SystemUser | null;
   updateCurrentUser: (updates: Partial<SystemUser>) => void;
   logout: () => Promise<void>;
@@ -64,6 +67,9 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode; initialUser?:
   const router=useRouter();
   const [isOnline, setIsOnline] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mediaSettings,setMediaSettings]=useState<MediaSettings|null>(null);
+  const refreshMedia=React.useCallback(async()=>{if(!initialUser)return;try{const response=await fetch('/api/media?view=settings',{cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();setMediaSettings(data.settings);}catch{setMediaSettings(null);}},[initialUser]);
+  useEffect(()=>{const controller=new AbortController();if(initialUser)fetch('/api/media?view=settings',{cache:'no-store',signal:controller.signal}).then(async response=>{if(!response.ok)throw Error();const data=await response.json();setMediaSettings(data.settings);}).catch(()=>{});const timer=setInterval(()=>{void refreshMedia();},30000);return()=>{controller.abort();clearInterval(timer);};},[refreshMedia,initialUser]);
 
   useEffect(() => {
     const updateOnlineStatus = () => setIsOnline(navigator.onLine);
@@ -120,10 +126,12 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode; initialUser?:
     // Preserve any legacy offline queue until acknowledged synchronization exists.
     pendingOfflineCount: 0,
     isOnline,
-    isLive: false,
+    isLive: !!initialUser&&!!mediaSettings?.live,
+    mediaSettings:initialUser?mediaSettings:null,
+    refreshMedia,
     searchQuery,
     setSearchQuery,
-  }), [isOnline, searchQuery, initialUser, router]);
+  }), [isOnline, searchQuery, initialUser, router,mediaSettings,refreshMedia]);
 
   return <ChurchContext.Provider value={value}>{children}</ChurchContext.Provider>;
 };

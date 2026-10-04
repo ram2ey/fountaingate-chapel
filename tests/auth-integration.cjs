@@ -7,7 +7,7 @@ const {PGlite}=require('@electric-sql/pglite');
 const {TOTP,Secret}=require('otpauth');
 
 test('real auth handlers persist accounts, verify phones, change credentials and revoke sessions',async()=>{
- const db=new PGlite();const jar=new Map();let delivered=[];
+ const db=new PGlite();const jar=new Map();let delivered=[],loseFileCommit=false;
  const originalLoad=Module._load,originalTs=require.extensions['.ts'];
  const originalFetch=global.fetch;const saved={...process.env};
  try{
@@ -23,8 +23,10 @@ test('real auth handlers persist accounts, verify phones, change credentials and
   const query=async(text,params=[])=>{const result=await db.query(text,params);return {...result,rowCount:result.rows.length || result.affectedRows || 0};};
   const transaction=role=>async(operation)=>{
    await db.exec('BEGIN;SET LOCAL ROLE '+role);
-   try{const value=await operation({query});await db.exec('COMMIT');return value;}
+   let value;try{value=await operation({query});await db.exec('COMMIT');}
    catch(error){await db.exec('ROLLBACK');throw error;}
+   if(loseFileCommit&&value?.file_id&&value?.byte_size){loseFileCommit=false;throw Error('Lost commit acknowledgement');}
+   return value;
   };
   require.extensions['.ts']=(module,filename)=>module._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,filename);
   Module._load=function(name,parent,isMain){
@@ -107,12 +109,58 @@ test('real auth handlers persist accounts, verify phones, change credentials and
   process.env.UPLOAD_DIRECTORY=uploadDirectory;
   try{
    const upload=require('../app/api/documents/route.ts'),download=require('../app/api/documents/[id]/route.ts');
-   const file=new Request('https://church.test/api/documents',{method:'POST',headers:{origin:'https://church.test','content-type':'application/pdf','x-document-title':'Private fixture'},body:'%PDF-1.4 test fixture'});
+   const fixturePdf=await require('pdf-lib').PDFDocument.create();fixturePdf.addPage();const fixtureBytes=Buffer.from(await fixturePdf.save());
+   const file=new Request('https://church.test/api/documents',{method:'POST',headers:{origin:'https://church.test','content-type':'application/pdf','x-document-title':'Private fixture'},body:fixtureBytes});
    const uploaded=await upload.POST(file);assert.equal(uploaded.status,201);const document=await uploaded.json();
-   const fetched=await download.GET(new Request('https://church.test/api/documents/'+document.id),{params:Promise.resolve({id:document.id})});assert.equal(fetched.status,200);assert.equal(await fetched.text(),'%PDF-1.4 test fixture');assert.equal(fetched.headers.get('cache-control'),'no-store');
+   const fetched=await download.GET(new Request('https://church.test/api/documents/'+document.id),{params:Promise.resolve({id:document.id})});assert.equal(fetched.status,200);assert.deepEqual(Buffer.from(await fetched.arrayBuffer()),fixtureBytes);assert.equal(fetched.headers.get('cache-control'),'no-store');
    await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);
    assert.equal((await download.GET(new Request('https://church.test'),{params:Promise.resolve({id:document.id})})).status,404);
    const forbidden=await upload.POST(new Request('https://church.test',{method:'POST',headers:{origin:'https://evil.test','content-type':'application/pdf','x-document-title':'Denied'},body:'%PDF-1.4'}));assert.equal(forbidden.status,403);
+   await db.query("UPDATE identity.memberships SET role='pastor' WHERE user_id=$1",[uid]);
+   const mediaService=require('../lib/server/media-service.ts'),mediaApi=require('../app/api/media/route.ts'),audioRoute=require('../app/api/media/[id]/route.ts');
+   const detailUrl=new URL('https://church.test/api/documents?id='+document.id);
+   let detail=await mediaService.readDocuments(detailUrl);assert.equal(detail.document.id,document.id);assert.equal(detail.versions.length,1);
+   loseFileCommit=true;
+   const replacement=await upload.POST(new Request('https://church.test/api/documents',{method:'POST',headers:{origin:'https://church.test','content-type':'text/plain','x-document-title':'New version','x-file-name':'notes.txt','x-document-id':document.id,'x-document-revision':String(detail.document.revision)},body:'Actual revised contents'}));assert.equal(replacement.status,201);assert.equal((await replacement.json()).id,document.id);assert.equal(loseFileCommit,false);
+   detail=await mediaService.readDocuments(detailUrl);assert.equal(detail.versions.length,2);assert.equal(detail.versions[0].version,2);
+   const olderVersion=await mediaService.readDocuments(new URL(detailUrl.href+'&before=2'));assert.equal(olderVersion.versions.length,1);assert.equal(olderVersion.versions[0].version,1);assert.equal(olderVersion.next_version,null);
+   const oldVersion=await download.GET(new Request('https://church.test/api/documents/'+document.id+'?version='+detail.versions[1].id),{params:Promise.resolve({id:document.id})});assert.deepEqual(Buffer.from(await oldVersion.arrayBuffer()),fixtureBytes);
+   const latest=await download.GET(new Request('https://church.test/api/documents/'+document.id),{params:Promise.resolve({id:document.id})});assert.equal(await latest.text(),'Actual revised contents');assert.equal(latest.headers.get('content-type'),'text/plain');
+   await mediaService.mutateDocument({id:document.id,action:'rename',title:'Saved new title',revision:detail.document.revision});
+   await assert.rejects(mediaService.mutateDocument({id:document.id,action:'rename',title:'Stale title',revision:detail.document.revision}),/changed/);
+   assert.equal((await upload.POST(new Request('https://church.test',{method:'POST',headers:{origin:'https://church.test','content-type':'application/pdf','x-document-title':'Broken PDF'},body:'%PDF-1.4 broken'}))).status,400);
+   assert.equal((await db.query("SELECT count(*)::int AS n FROM public.stored_files WHERE state='failed'")).rows[0].n,1);
+   const phase7Branch=(await db.query("INSERT INTO public.branches(name) VALUES('Media isolation') RETURNING id")).rows[0].id;
+   await db.query("INSERT INTO identity.memberships(user_id,branch_id,role) VALUES($1,$2,'pastor')",[uid,phase7Branch]);
+   await db.query('UPDATE identity.sessions SET branch_id=$1 WHERE user_id=$2',[phase7Branch,uid]);
+   assert.equal((await download.GET(new Request('https://church.test/api/documents/'+document.id),{params:Promise.resolve({id:document.id})})).status,404);
+   await db.query('UPDATE identity.sessions SET branch_id=$1 WHERE user_id=$2',[branch,uid]);
+   const wav=Buffer.alloc(48);wav.write('RIFF');wav.writeUInt32LE(40,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(8000,24);wav.writeUInt32LE(16000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(4,40);
+   const audioUploaded=await mediaApi.POST(new Request('https://church.test/api/media',{method:'POST',headers:{origin:'https://church.test','content-type':'audio/wav','x-document-title':'Real audio','x-file-name':'sermon.wav','x-preacher':'Fixture preacher','x-preached-on':'2026-10-04'},body:wav}));assert.equal(audioUploaded.status,201);const audio=await audioUploaded.json();
+   let sermons=await mediaService.readMedia(new URL('https://church.test/api/media'));assert.equal(sermons.items[0].id,audio.id);assert.equal(sermons.items[0].published,false);
+   await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);
+   assert.equal((await mediaService.readMedia(new URL('https://church.test/api/media'))).items.length,0);
+   assert.equal((await audioRoute.GET(new Request('https://church.test/api/media/'+audio.id),{params:Promise.resolve({id:audio.id})})).status,404);
+   await assert.rejects(mediaService.mutateMedia({action:'settings',revision:0,live:false,live_url:null,schedules:[]}),/denied/);
+   await db.query("UPDATE identity.memberships SET role='pastor' WHERE user_id=$1",[uid]);
+   const sermon=sermons.items[0];await mediaService.mutateMedia({action:'edit',id:audio.id,revision:sermon.revision,title:'Published audio',preacher:sermon.preacher,preached_on:'2026-10-04',published:true});
+   await mediaService.mutateMedia({action:'settings',revision:0,live:true,live_url:'https://www.youtube.com/watch?v=fixture',schedules:[{name:'Configured service',day:0,time:'08:30'}]});
+   await assert.rejects(mediaService.mutateMedia({action:'settings',revision:0,live:false,live_url:null,schedules:[]}),/changed/);
+   await assert.rejects(mediaService.mutateMedia({action:'settings',revision:1,live:true,live_url:'https://evil.test/live',schedules:[]}),/Facebook or YouTube/);
+   await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);
+   sermons=await mediaService.readMedia(new URL('https://church.test/api/media'));assert.equal(sermons.items.length,1);assert.equal(sermons.settings.live,true);assert.equal(sermons.settings.schedules[0].time,'08:30');
+   const audioPartial=await audioRoute.GET(new Request('https://church.test/api/media/'+audio.id,{headers:{range:'bytes=12-23'}}),{params:Promise.resolve({id:audio.id})});assert.equal(audioPartial.status,206);assert.equal(audioPartial.headers.get('content-range'),'bytes 12-23/48');assert.deepEqual(Buffer.from(await audioPartial.arrayBuffer()),wav.subarray(12,24));
+   assert.equal((await audioRoute.GET(new Request('https://church.test/api/media/'+audio.id,{headers:{range:'bytes=100-'}}),{params:Promise.resolve({id:audio.id})})).status,416);
+   const head=await audioRoute.HEAD(new Request('https://church.test/api/media/'+audio.id,{method:'HEAD'}),{params:Promise.resolve({id:audio.id})});assert.equal(head.status,200);assert.equal(head.headers.get('content-length'),'48');assert.equal(await head.text(),'');
+   await db.query("UPDATE identity.memberships SET role='pastor' WHERE user_id=$1",[uid]);
+   const reservations=[];for(let n=0;n<3;n++)reservations.push((await db.query("INSERT INTO public.stored_files(branch_id,owner_id,kind,version,storage_key,original_name,media_type) VALUES($1,$2,'audio',1,$3,'pending.mp3','audio/mpeg') RETURNING id",[phase7Branch,uid,require('node:crypto').randomUUID()])).rows[0].id);
+   const blockedUpload=await upload.POST(new Request('https://church.test/api/documents',{method:'POST',headers:{origin:'https://church.test','content-type':'text/plain','x-document-title':'Blocked fourth intent'},body:'valid text'}));assert.equal(blockedUpload.status,400);assert.match((await blockedUpload.json()).error,/Upload limit/);
+   await db.query('DELETE FROM public.stored_files WHERE id=ANY($1::uuid[])',[reservations]);
+   detail=await mediaService.readDocuments(detailUrl);await mediaService.mutateDocument({id:document.id,action:'archive',revision:detail.document.revision});
+   assert.equal((await download.GET(new Request('https://church.test/api/documents/'+document.id),{params:Promise.resolve({id:document.id})})).status,404);
+   await db.query("UPDATE public.documents SET archived_at=now()-interval '31 days' WHERE id=$1",[document.id]);
+   await require('../scripts/cleanup-files.cjs').cleanup({query},require('../lib/server/file-storage.cjs').localStorage(uploadDirectory),uploadDirectory);
+   assert.equal((await db.query("SELECT count(*)::int AS n FROM public.stored_files WHERE document_id=$1 AND state='purged'",[document.id])).rows[0].n,2);
   }finally{
    // Only generated direct children of this uniquely allocated test directory are removed.
    for(const name of fs.readdirSync(uploadDirectory)){const target=path.resolve(uploadDirectory,name);assert.equal(path.dirname(target),path.resolve(uploadDirectory));fs.unlinkSync(target);}fs.rmdirSync(uploadDirectory);

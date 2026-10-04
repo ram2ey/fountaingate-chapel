@@ -12,6 +12,7 @@ RUN npm run build
 FROM dependencies AS maintenance
 ENV NODE_ENV=production
 COPY lib/server/database-config.cjs ./lib/server/database-config.cjs
+COPY lib/server/file-storage.cjs ./lib/server/file-storage.cjs
 COPY scripts ./scripts
 COPY db ./db
 USER node
@@ -19,6 +20,11 @@ CMD ["node", "scripts/migrate.cjs"]
 
 # A running private resource for Coolify scheduled commands.
 FROM maintenance AS attendance-scheduler
+CMD ["node", "scripts/maintenance-host.cjs"]
+
+# Shares the web upload volume; numeric UID/GID matches the non-root web user.
+FROM maintenance AS files-scheduler
+USER 1001:1001
 CMD ["node", "scripts/maintenance-host.cjs"]
 
 # Separately supervised private outbox dispatcher; no owner or identity credentials.

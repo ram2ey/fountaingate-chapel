@@ -232,6 +232,8 @@ Tasks:
 
 Exit checks: uploaded/downloaded files match expected bytes and open in their native applications; unauthorized downloads fail; document selection points to the created record; audio actually plays/seeks; live status agrees across the app; unavailable media does not show fake progress.
 
+Implementation status: migration 0013, staged private-volume uploads, version history, protected original downloads/range requests, native sermon audio controls, branch live/schedule settings and retention cleanup are implemented. Supported files are PDF/text and MP3/PCM WAV; unused generation controls are removed. No anonymous sharing is enabled. See [Phase 7 setup](docs/PHASE-7-SETUP.md). Native browser playback, Coolify proxy limits, redeployment persistence and restore verification remain staging release checks.
+
 ## Phase 8 — Accessibility, performance and release readiness
 
 Audit coverage: 24, 25; final verification of all findings.

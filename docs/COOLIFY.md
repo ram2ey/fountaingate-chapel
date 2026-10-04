@@ -5,7 +5,7 @@
 1. A Linux Hetzner server running Coolify, with restricted SSH/management access and the application domain pointing to its public address.
 2. A Dockerfile application from the Git repository, internal port `3000`, HTTPS domain and health path `/health`. Use the default final `runner` target or explicitly select `runner`.
 3. A PostgreSQL instance with persistent storage and restricted/private connectivity. Web and controlled maintenance resources need network access to the database hostname. Use separate staging and production databases/credentials.
-4. A dedicated persistent upload volume mounted at `/app/uploads`, writable by UID/GID `1001:1001`. Phase 2 private PDF APIs use this volume; the document UI follows in Phase 7. Do not put confidential files in `public/`.
+4. A dedicated persistent upload volume mounted at `/app/uploads`, writable by UID/GID `1001:1001`. Phase 7 document/audio uploads and original downloads use this volume. Follow [the documents/media setup](PHASE-7-SETUP.md) and deploy the matching private cleanup scheduler. Do not put confidential files in `public/`.
 
 Avoid publicly publishing database or internal application ports. Confirm Hetzner/Docker/proxy firewall behavior. Size the server after measuring builds, web/worker memory and database resources; local builds must not exhaust the database host. A single host is a failure domain.
 
@@ -35,7 +35,7 @@ These are liveness/access smoke checks; real identity, database, SMS and file ch
 
 Require the repository's **Checks** workflow to succeed before deployment. Configure Coolify deployment gating appropriately: its automatic Git push deployment must not bypass CI. Initially deploy approved releases manually after checks, or connect an explicitly authorized CI deployment step later.
 
-Build the maintenance image with `docker build --target maintenance`. Supply migration credentials at runtime and run `node scripts/migrate.cjs` once. The migration folder now contains ten domain/identity/workflow migrations. `node scripts/db-check.cjs` uses the runtime role and rejects elevated/owner roles. Never execute the removed Supabase schema or migrate on every startup.
+Build the maintenance image with `docker build --target maintenance`. Supply migration credentials at runtime and run `node scripts/migrate.cjs` once. The migration folder now contains thirteen domain/identity/workflow migrations. `node scripts/db-check.cjs` uses the runtime role and rejects elevated/owner roles. Never execute the removed Supabase schema or migrate on every startup.
 
 Production release sequence: confirm backup/restore viability → apply compatible migrations once → deploy matching application/worker images → verify health and core workflows → enable relevant jobs. Keep the previous image/commit and additive schema compatibility for rollback. Destructive schema changes need a later reviewed migration.
 

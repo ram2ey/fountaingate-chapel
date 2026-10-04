@@ -52,7 +52,7 @@ jobs:
         run: |
           set -euo pipefail
           docker network create fgc-ci
-          trap 'docker logs fgc-pg; docker rm -f fgc-pg; docker network rm fgc-ci' EXIT
+          trap 'docker logs fgc-pg; docker rm -f fgc-files fgc-pg; docker volume rm fgc-file-check; docker network rm fgc-ci' EXIT
           docker run -d --name fgc-pg --network fgc-ci -e POSTGRES_PASSWORD=ci-only postgres:17-bookworm
           for attempt in $(seq 1 30); do
             if docker exec fgc-pg pg_isready -U postgres; then break; fi
@@ -63,6 +63,30 @@ jobs:
             docker run --rm --network fgc-ci -e MIGRATION_DATABASE_URL=postgresql://fgc_owner:ci-owner@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable fgc-maintenance:check
           done
           docker run --rm --network fgc-ci -e DATABASE_URL=postgresql://fgc_runtime:ci-web@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable fgc-maintenance:check node scripts/db-check.cjs
-          test "$(docker exec fgc-pg psql -U postgres -tAc 'SELECT count(*) FROM public.schema_migrations')" = "12"
+          test "$(docker exec fgc-pg psql -U postgres -tAc 'SELECT count(*) FROM public.schema_migrations')" = "13"
           docker run --rm --network fgc-ci -e MESSAGING_DATABASE_URL=postgresql://fgc_messaging:ci-message@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable -e SMS_BROADCAST_ENABLED=true -e MNOTIFY_API_KEY=ci-unused -e MNOTIFY_SENDER_ID=FGC fgc-messaging:check node scripts/messaging-worker.cjs --once
           docker run --rm --network fgc-ci -e MIGRATION_DATABASE_URL=postgresql://fgc_owner:ci-owner@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable fgc-maintenance:check node scripts/reconcile-attendance.cjs
+          docker exec -i fgc-pg psql -U postgres -v ON_ERROR_STOP=1 < tests/fixtures/native-files.sql
+          docker volume create fgc-file-check
+          docker run -d --name fgc-files --network fgc-ci -p 127.0.0.1:3001:3000 -v fgc-file-check:/app/uploads -e DATABASE_URL=postgresql://fgc_runtime:ci-web@fgc-pg:5432/postgres -e AUTH_DATABASE_URL=postgresql://fgc_auth:ci-auth@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable -e APP_ORIGIN=http://127.0.0.1:3001 -e UPLOAD_DIRECTORY=/app/uploads fgc-web:check
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3001/health >/dev/null; then break; fi
+            sleep 2
+          done
+          printf 'Persistent original bytes from CI\n' > /tmp/fgc-file.txt
+          cookie="fgc_session=$(printf 'a%.0s' {1..43})"
+          curl --fail --silent -H "Cookie: $cookie" -H 'Origin: http://127.0.0.1:3001' -H 'Content-Type: text/plain' -H 'x-document-title: CI persistent document' -H 'x-file-name: original.txt' --data-binary @/tmp/fgc-file.txt http://127.0.0.1:3001/api/documents > /tmp/fgc-created.json
+          file_id=$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('/tmp/fgc-created.json')).id)")
+          curl --fail --silent -H "Cookie: $cookie" "http://127.0.0.1:3001/api/documents/$file_id" > /tmp/fgc-downloaded.txt
+          cmp /tmp/fgc-file.txt /tmp/fgc-downloaded.txt
+          test "$(curl --silent -o /dev/null -w '%{http_code}' "http://127.0.0.1:3001/api/documents/$file_id")" = "404"
+          test "$(curl --silent -o /dev/null -w '%{http_code}' -H "Cookie: $cookie" -H 'Range: bytes=0-5' "http://127.0.0.1:3001/api/documents/$file_id")" = "206"
+          test "$(curl --silent -o /dev/null -w '%{http_code}' -H "Cookie: $cookie" -H 'Range: bytes=9999-' "http://127.0.0.1:3001/api/documents/$file_id")" = "416"
+          docker restart fgc-files
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent -H "Cookie: $cookie" "http://127.0.0.1:3001/api/documents/$file_id" > /tmp/fgc-restored.txt; then break; fi
+            sleep 2
+          done
+          cmp /tmp/fgc-file.txt /tmp/fgc-restored.txt
+          head -c 10485761 /dev/zero > /tmp/fgc-too-large.txt
+          test "$(curl --silent -o /dev/null -w '%{http_code}' -H "Cookie: $cookie" -H 'Origin: http://127.0.0.1:3001' -H 'Content-Type: text/plain' -H 'Transfer-Encoding: chunked' -H 'x-document-title: Oversized CI fixture' --data-binary @/tmp/fgc-too-large.txt http://127.0.0.1:3001/api/documents)" = "413"

@@ -28,12 +28,9 @@ test('migration credentials are separate and have no application fallback', () =
 });
 
 test('unfinished feature components contain no fake success, upload or playback implementations', () => {
-  for (const file of ['app/documents/page-content.tsx',
-    'components/media/Mp3UploaderModal.tsx',
-    'components/media/AudioLibraryPlayer.tsx']) {
+  for (const file of ['components/media/FileUpload.tsx','components/media/AudioLibraryPlayer.tsx']) {
     const source = fs.readFileSync(path.join(root, file), 'utf8');
-    assert.match(source, /unavailable/i, file);
-    assert.doesNotMatch(source, /setTimeout|Math\.random|new Blob|alert\(|setIsPlaying|File saved|Confirmed!/, file);
+    assert.doesNotMatch(source, /setTimeout|Math\.random|new Blob|alert\(|setIsPlaying|Confirmed!/, file);
   }
   assert.doesNotMatch(fs.readFileSync(path.join(root, 'components/care/ConfidentialCareLog.tsx'), 'utf8'), /Encrypted/);
 });
