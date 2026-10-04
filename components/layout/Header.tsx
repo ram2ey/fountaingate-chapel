@@ -1,192 +1,68 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { can, routeCapabilities } from '../../lib/auth/permissions';
+import { LogOut, MoreHorizontal, Radio, Settings } from 'lucide-react';
 import { useChurch } from '../../lib/context/ChurchContext';
 import { AccessibleDialog } from '../common/AccessibleDialog';
+import { Brand } from './Brand';
+import { isCurrentRoute, mobileNavigation, permittedNavigation } from './navigation';
 
-export const Header: React.FC = () => {
+export function Header() {
   const pathname = usePathname();
-  const { isLive, currentUser, logout, currentRole, members } = useChurch();
+  const { isLive, mediaSettings, currentUser, logout, currentRole, members } = useChurch();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [signoutError, setSignoutError] = useState('');
+  const [signingOut, setSigningOut] = useState(false);
+  const items = permittedNavigation(currentRole);
+  const quickItems = mobileNavigation.filter(item => items.some(nav => nav.href === item.href));
+  const moreActive = !quickItems.some(item => isCurrentRoute(pathname, item.href));
+  const atRiskCount = members.filter(member => member.status === 'at_risk').length;
+  const title = items.find(item => isCurrentRoute(pathname, item.href))?.label || 'Fountain Gate Chapel, Change Pastures';
+  const availableLive = isLive && !!mediaSettings?.live_url;
 
-  const [signoutError,setSignoutError]=useState('');
-  const [signingOut,setSigningOut]=useState(false);
-  async function handleLogout(){
-    setSigningOut(true);setSignoutError('');
-    try{await logout();setMobileMenuOpen(false);}catch{setSignoutError('Sign-out failed. Please retry.');}finally{setSigningOut(false);}
+  async function handleLogout() {
+    setSigningOut(true); setSignoutError('');
+    try { await logout(); setMobileMenuOpen(false); }
+    catch { setSignoutError('Sign-out failed. Please retry.'); }
+    finally { setSigningOut(false); }
   }
-  const atRiskCount = members.filter(m => m.status === 'at_risk').length;
 
-  const NAV_ITEMS = [
-    { label: 'Dashboard Overview', href: '/', roles: ['admin', 'pastor', 'member'] },
-    { label: 'Services & Attendance', href: '/attendance', roles: ['admin', 'pastor'] },
-    { label: 'Member Directory', href: '/members', roles: ['admin', 'pastor', 'member'] },
-    { label: 'Online Giving & Tithe', href: '/giving', roles: ['admin', 'pastor', 'member'] },
-    { label: 'Pastoral Care & At-Risk', href: '/pastoral-care', badge: atRiskCount > 0 ? atRiskCount : undefined, roles: ['admin', 'pastor'] },
-    { label: 'Pastoral Documents', href: '/documents', roles: ['admin', 'pastor'] },
-    { label: 'Prayer Wall & Testimonies', href: '/prayer-wall', roles: ['admin', 'pastor', 'member'] },
-    { label: 'Sermon & Media Hub', href: '/sermons', roles: ['admin', 'pastor', 'member'] },
-    { label: 'SMS Broadcasts', href: '/communications', roles: ['admin', 'pastor'] },
-    { label: 'Operational status', href: '/operations', roles: ['admin', 'pastor'] },
-    { label: 'Financial Ledger', href: '/financials', roles: ['admin'] },
-    { label: 'Tablet Entrance Kiosk', href: '/kiosk', roles: ['admin', 'pastor'] },
-    { label: 'Admin Management Panel', href: '/admin', roles: ['admin'] },
-    { label: 'User Account Settings', href: '/settings', roles: ['admin', 'pastor', 'member'] },
-  ];
+  const signout = <button onClick={handleLogout} disabled={signingOut} className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-church-50 hover:text-slate-900 disabled:opacity-50"><LogOut aria-hidden="true" size={17} strokeWidth={1.6} />{signingOut ? 'Signing out…' : 'Log Out'}</button>;
 
-  return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-3 transition-all shadow-sm">
-      {signoutError && <p role="alert" className="text-red-700 text-sm">{signoutError}</p>}
-      <div className="flex items-center justify-between gap-2 sm:gap-4">
-        {/* Left Side: Brand Name */}
-        <div className="flex items-center gap-3 shrink-0">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">
-              FGC
-            </div>
-            <span className="font-display font-extrabold text-sm text-slate-900">
-              Fountain Gate Chapel
-            </span>
-          </Link>
-        </div>
-
-        {/* Right Side: Live Indicator, Entrance Kiosk, Settings & Hamburger Menu */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Live Alert Banner */}
-          {isLive && (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold animate-pulse">
-              <span className="w-2 h-2 rounded-full bg-rose-600 animate-live-pulse" />
-              <span className="uppercase text-xs hidden sm:inline">LIVE</span>
-            </div>
-          )}
-
-          {/* Entrance Kiosk Pill */}
-          <a
-            href="/kiosk"
-            className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold hover:bg-amber-100 transition"
-          >
-            <span>Kiosk</span>
-          </a>
-
-          {/* User Display Badge (Fixed Role - Non-switchable) */}
-          <div className="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-sm font-bold text-slate-700 uppercase">
-            {currentRole}
-          </div>
-
-          {/* Settings Link on Desktop */}
-          <Link
-            href="/settings"
-            className="hidden md:inline-flex p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition"
-            title="User Account Settings"
-          >
-            Settings
-          </Link>
-
-          {/* Log Out Button on Desktop */}
-          {currentUser ? (
-            <button
-              onClick={handleLogout}
-              disabled={signingOut}
-              className="hidden md:inline-flex px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-sm font-bold border border-rose-200 transition"
-            >
-              Log Out
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              className="hidden md:inline-flex px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition"
-            >
-              Log In
-            </Link>
-          )}
-
-          {/* Hamburger Menu Toggle Button (Mobile & Tablet ONLY - Hidden on Desktop) */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Open navigation"
-            aria-haspopup="dialog"
-            aria-expanded={mobileMenuOpen}
-            className="md:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-base font-bold transition flex items-center justify-center border border-slate-200"
-            title="Toggle Navigation Menu"
-          >
-            {mobileMenuOpen ? '✕' : '☰'}
-          </button>
+  return <>
+    <header className="sticky top-0 z-30 border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur-sm sm:px-6 lg:px-8">
+      {signoutError && <p role="alert" className="mb-2 text-sm text-red-700">{signoutError}</p>}
+      <div className="flex min-h-11 items-center justify-between gap-3">
+        <Link href="/" className="min-w-0 md:hidden"><Brand compact /></Link>
+        <p className="hidden text-sm font-medium text-slate-600 md:block">{title}</p>
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          {availableLive && <Link href="/sermons" aria-label="Watch live service" className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium text-rose-700"><Radio aria-hidden="true" size={16} /><span className="hidden sm:inline">Live</span></Link>}
+          <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs capitalize text-slate-600">{currentRole}</span>
+          <Link href="/settings" aria-label="User Account Settings" className="hidden min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 hover:bg-church-100 md:flex"><Settings aria-hidden="true" size={19} strokeWidth={1.6} /></Link>
+          <div className="hidden md:block">{currentUser ? signout : <Link href="/login" className="btn-primary">Log In</Link>}</div>
         </div>
       </div>
-
-      {/* Hamburger Navigation Drawer Modal (Mobile & Tablet ONLY - Hidden on Desktop) */}
-      {mobileMenuOpen && (
-        <AccessibleDialog title="Navigation" onClose={()=>setMobileMenuOpen(false)}>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 px-1">
-              <div>
-                <p className="font-display font-extrabold text-sm text-slate-900">Fountain Gate Chapel</p>
-                <p className="text-xs text-amber-700 font-bold uppercase">{currentRole} Navigation</p>
-              </div>
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                aria-label="Close navigation menu"
-                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center"
-              >
-                ✕
-              </button>
-            </div>
-
-            <nav aria-label="Mobile primary" className="space-y-1 max-h-[70vh] overflow-y-auto pr-1">
-              {NAV_ITEMS.map((item) => {
-                const isAllowed = can(currentRole, routeCapabilities[item.href] || 'kiosk');
-                const isActive = pathname === item.href;
-
-                if (!isAllowed) return null;
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={isActive?'page':undefined}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between min-h-[44px] px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
-                      isActive
-                        ? 'bg-indigo-600 text-white font-bold shadow-md'
-                        : 'text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    {item.badge !== undefined && (
-                      <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-xs font-bold animate-pulse">
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs px-1">
-              <span className="text-sm text-slate-500 truncate max-w-[150px]">{currentUser?.full_name || 'FGC Leader'}</span>
-              {currentUser ? (
-                <button
-                  onClick={handleLogout} disabled={signingOut}
-                  className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 font-bold text-sm border border-rose-200"
-                >
-                  Log Out
-                </button>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-1 rounded-lg bg-indigo-600 text-white font-bold text-sm"
-                >
-                  Log In
-                </Link>
-              )}
-            </div>
-          </div>
-        </AccessibleDialog>
-      )}
     </header>
-  );
-};
+
+    <nav aria-label="Mobile shortcuts" className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-slate-200 bg-slate-50/95 px-2 pt-1 backdrop-blur-sm md:hidden">
+      {quickItems.map(item => {
+        const active = isCurrentRoute(pathname, item.href), Icon = item.icon;
+        return <Link key={item.href} href={item.href} aria-current={active ? 'page' : undefined} className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-xs ${active ? 'font-semibold text-church-800' : 'text-slate-600 hover:bg-church-100'}`}><Icon aria-hidden="true" size={20} strokeWidth={active ? 2 : 1.6} /><span>{item.label}</span></Link>;
+      })}
+      <button type="button" aria-label="Open navigation" aria-haspopup="dialog" aria-expanded={mobileMenuOpen} onClick={event => { event.currentTarget.focus(); setMobileMenuOpen(true); }} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg text-xs ${moreActive || mobileMenuOpen ? 'font-semibold text-church-800' : 'text-slate-600'}`}><MoreHorizontal aria-hidden="true" size={21} /><span>More</span></button>
+    </nav>
+
+    {mobileMenuOpen && <AccessibleDialog title="Navigation" onClose={() => setMobileMenuOpen(false)}>
+      <p className="mb-4 text-sm text-slate-500">{currentUser?.full_name || 'Fountain Gate Chapel, Change Pastures'} · <span className="capitalize">{currentRole}</span></p>
+      <nav aria-label="Mobile primary" className="space-y-1">
+        {items.map(item => {
+          const active = isCurrentRoute(pathname, item.href), Icon = item.icon;
+          return <Link key={item.href} href={item.href} aria-current={active ? 'page' : undefined} onClick={() => setMobileMenuOpen(false)} className={`flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${active ? 'bg-church-100 font-semibold text-church-900' : 'text-slate-700 hover:bg-church-50'}`}><Icon aria-hidden="true" size={18} strokeWidth={1.6} /><span className="flex-1">{item.label}</span>{item.badge === 'care' && atRiskCount > 0 && <span className="rounded-full bg-rose-100 px-2 text-rose-800">{atRiskCount}</span>}</Link>;
+        })}
+      </nav>
+      <div className="mt-4 border-t border-slate-200 pt-3">{signoutError && <p role="alert" className="text-sm text-red-700">{signoutError}</p>}{currentUser ? signout : <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="btn-primary">Log In</Link>}</div>
+    </AccessibleDialog>}
+  </>;
+}

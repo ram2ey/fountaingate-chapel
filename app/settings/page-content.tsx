@@ -8,7 +8,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 pb-8 max-w-4xl mx-auto">
       <div>
-        <h1 className="font-display font-bold text-2xl sm:text-3xl text-slate-900">
+        <h1 className="font-display font-semibold text-2xl sm:text-3xl text-slate-900">
           User Account Settings
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">

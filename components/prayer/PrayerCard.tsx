@@ -72,7 +72,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
     }`}>
       {/* Urgent stripe */}
       {request.is_urgent && (
-        <div className="bg-rose-600 text-white text-center text-[10px] font-bold py-1 uppercase tracking-widest animate-pulse">
+        <div className="bg-rose-600 text-white text-center text-[10px] font-semibold py-1 uppercase tracking-widest animate-pulse">
           🔴 Urgent Prayer Request — Please Pray Now
         </div>
       )}
@@ -81,24 +81,24 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-church-50 border border-church-200 text-church-700 text-[10px] font-semibold">
               {request.category}
             </span>
 
             {request.status === 'answered_testimony' && (
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-[10px] font-bold uppercase">
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-[10px] font-semibold uppercase">
                 🎉 Praise Testimony
               </span>
             )}
 
             {request.status === 'under_pastoral_care' && (
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-bold uppercase">
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-semibold uppercase">
                 🙌 Under Pastoral Prayer
               </span>
             )}
 
             {request.is_confidential_to_pastors && (
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-bold uppercase">
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-semibold uppercase">
                 🔒 Confidential to Pastors
               </span>
             )}
@@ -109,13 +109,13 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
 
         {/* Title & Details */}
         <div>
-          <h4 className="font-display font-bold text-base text-slate-900 leading-snug">{request.title}</h4>
+          <h4 className="font-display font-semibold text-base text-slate-900 leading-snug">{request.title}</h4>
           <p className="text-xs text-slate-600 mt-1 leading-relaxed">{request.details}</p>
         </div>
 
         {/* Scripture Reference Block */}
         {request.scripture_reference && (
-          <div className="px-3 py-2 rounded-xl bg-indigo-50/70 border-l-4 border-indigo-400 text-xs text-indigo-800 font-semibold italic">
+          <div className="px-3 py-2 rounded-xl bg-church-50/70 border-l-4 border-church-400 text-xs text-church-800 font-semibold italic">
             📖 &quot;{request.scripture_reference}&quot;
           </div>
         )}
@@ -123,8 +123,8 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
         {/* Footer Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-slate-700">
-              Posted by: <span className="text-indigo-700">{request.is_anonymous ? 'Anonymous Member' : request.requester_name}</span>
+            <span className="text-[11px] font-semibold text-slate-700">
+              Posted by: <span className="text-church-700">{request.is_anonymous ? 'Anonymous Member' : request.requester_name}</span>
             </span>
           </div>
 
@@ -133,10 +133,10 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
             <button
               onClick={handlePray}
               disabled={hasPrayed}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs transition border ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs shadow-xs transition border ${
                 hasPrayed
                   ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-default'
-                  : 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-700'
+                  : 'bg-church-50 hover:bg-church-100 border-church-200 text-church-700'
               }`}
             >
               <span>{hasPrayed ? '✓ Prayed' : `🙏 I Prayed (${request.prayed_count})`}</span>
@@ -145,7 +145,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
             {/* Encouragement Button */}
             <button
               onClick={() => { setShowCommentBox(!showCommentBox); setShowThread(true); }}
-              className="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-bold text-[11px] shadow-xs transition"
+              className="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-semibold text-[11px] shadow-xs transition"
             >
               💬 Encourage
             </button>
@@ -154,7 +154,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
             {isPastorOrAdmin && (
               <button
                 onClick={handleWhatsAppOutreach}
-                className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition"
+                className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-[11px] shadow-sm transition"
                 title="Send WhatsApp encouragement message"
               >
                 WhatsApp Pastor Outreach
@@ -166,7 +166,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
               <select
                 value={request.status}
                 onChange={(e) => updatePrayerStatus(request.id, e.target.value as PrayerStatus)}
-                className="bg-slate-100 border border-slate-300 text-slate-800 rounded-xl px-2 py-1 text-[11px] font-bold"
+                className="bg-slate-100 border border-slate-300 text-slate-800 rounded-xl px-2 py-1 text-[11px] font-semibold"
               >
                 <option value="active">Active Prayer</option>
                 <option value="under_pastoral_care">Under Pastoral Prayer</option>
@@ -177,7 +177,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
             {/* Post Update Button (submitter or pastors) */}
             <button
               onClick={() => { setShowUpdateBox(!showUpdateBox); setShowThread(true); }}
-              className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[11px] shadow-xs transition"
+              className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-semibold text-[11px] shadow-xs transition"
             >
               📢 Post Update
             </button>
@@ -186,7 +186,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
             {currentRole === 'admin' && (
               <button
                 onClick={() => deletePrayerRequest(request.id)}
-                className="p-1 rounded-lg text-rose-600 hover:bg-rose-50 text-[11px] font-bold"
+                className="p-1 rounded-lg text-rose-600 hover:bg-rose-50 text-[11px] font-semibold"
                 title="Delete request"
               >
                 ✕
@@ -208,7 +208,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
             />
             <button
               onClick={handleSubmitComment}
-              className="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-bold text-xs"
+              className="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold text-xs"
             >
               Send
             </button>
@@ -228,7 +228,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
             />
             <button
               onClick={handleSubmitUpdate}
-              className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+              className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs"
             >
               Post
             </button>
@@ -239,7 +239,7 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
         {hasThread && (
           <button
             onClick={() => setShowThread(!showThread)}
-            className="text-[10px] font-bold text-indigo-600 hover:underline mt-1"
+            className="text-[10px] font-semibold text-church-600 hover:underline mt-1"
           >
             {showThread ? '▲ Hide Thread' : `▼ View Thread (${request.comments.length + request.updates.length})`}
           </button>
@@ -252,11 +252,11 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
           {/* Updates (Praise Reports) */}
           {request.updates.map(upd => (
             <div key={upd.id} className="flex items-start gap-2.5 py-1.5 border-b border-slate-100 last:border-0">
-              <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-semibold shrink-0 mt-0.5">
                 📢
               </div>
               <div>
-                <p className="text-[11px] font-bold text-emerald-900">{upd.author_name} • Praise Update</p>
+                <p className="text-[11px] font-semibold text-emerald-900">{upd.author_name} • Praise Update</p>
                 <p className="text-xs text-slate-700 mt-0.5">{upd.text}</p>
                 <p className="text-[10px] text-slate-400 mt-0.5">{upd.created_at}</p>
               </div>
@@ -266,11 +266,11 @@ export const PrayerCard: React.FC<Props> = ({ request }) => {
           {/* Encouragement Comments */}
           {request.comments.map(comment => (
             <div key={comment.id} className="flex items-start gap-2.5 py-1.5 border-b border-slate-100 last:border-0">
-              <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-[9px] font-bold shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-[9px] font-semibold shrink-0 mt-0.5">
                 🙏
               </div>
               <div>
-                <p className="text-[11px] font-bold text-amber-900">{comment.author_name}</p>
+                <p className="text-[11px] font-semibold text-amber-900">{comment.author_name}</p>
                 <p className="text-xs text-slate-700 mt-0.5">{comment.text}</p>
                 <p className="text-[10px] text-slate-400 mt-0.5">{comment.created_at}</p>
               </div>

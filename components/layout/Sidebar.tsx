@@ -1,92 +1,35 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { can, routeCapabilities } from '../../lib/auth/permissions';
+import { ChevronRight, UserRound } from 'lucide-react';
 import { useChurch } from '../../lib/context/ChurchContext';
+import { Brand } from './Brand';
+import { isCurrentRoute, permittedNavigation } from './navigation';
 
-export const Sidebar: React.FC = () => {
+export function Sidebar() {
   const pathname = usePathname();
   const { currentRole, members, currentUser } = useChurch();
+  const atRiskCount = members.filter(member => member.status === 'at_risk').length;
 
-  const atRiskCount = members.filter(m => m.status === 'at_risk').length;
-
-  const NAV_ITEMS = [
-    { label: 'Dashboard Overview', href: '/', roles: ['admin', 'pastor', 'member'] },
-    { label: 'Services & Attendance', href: '/attendance', roles: ['admin', 'pastor'] },
-    { label: 'Member Directory', href: '/members', roles: ['admin', 'pastor', 'member'] },
-    { label: 'Online Giving & Tithe', href: '/giving', roles: ['admin', 'pastor', 'member'] },
-    { label: 'Pastoral Care & At-Risk', href: '/pastoral-care', badge: atRiskCount > 0 ? atRiskCount : undefined, roles: ['admin', 'pastor'] },
-    { label: 'Pastoral Documents', href: '/documents', roles: ['admin', 'pastor'] },
-    { label: 'Prayer Wall & Testimonies', href: '/prayer-wall', roles: ['admin', 'pastor', 'member'] },
-    { label: 'Sermon & Media Hub', href: '/sermons', roles: ['admin', 'pastor', 'member'] },
-    { label: 'SMS Broadcasts', href: '/communications', roles: ['admin', 'pastor'] },
-    { label: 'Operational status', href: '/operations', roles: ['admin', 'pastor'] },
-    { label: 'Financial Ledger', href: '/financials', roles: ['admin'] },
-    { label: 'Tablet Entrance Kiosk', href: '/kiosk', roles: ['admin', 'pastor'] },
-    { label: 'Admin Management Panel', href: '/admin', roles: ['admin'] },
-    { label: 'User Account Settings', href: '/settings', roles: ['admin', 'pastor', 'member'] },
-  ];
-
-  return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between hidden md:flex shrink-0 h-screen sticky top-0 shadow-sm">
-      <div>
-        {/* Brand Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-            FGC
-          </div>
-          <div>
-            <h1 className="font-display font-extrabold text-sm text-slate-900 leading-tight">FOUNTAIN GATE</h1>
-            <p className="text-xs tracking-wider font-semibold text-amber-700 uppercase">Chapel Management</p>
-          </div>
-        </div>
-
-        {/* Navigation Menu */}
-        <nav aria-label="Primary" className="p-3 space-y-1">
-          <div className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-slate-600">
-            Modules & Ecosystem
-          </div>
-
-          {NAV_ITEMS.map((item) => {
-            const isAllowed = can(currentRole, routeCapabilities[item.href] || 'kiosk');
-            const isActive = pathname === item.href;
-
-            if (!isAllowed) return null;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isActive?'page':undefined}
-                className={`flex items-center justify-between min-h-[44px] px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-md font-bold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
-              >
-                <span>{item.label}</span>
-                {item.badge !== undefined && (
-                  <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-xs font-bold animate-pulse">
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Footer User Info */}
-      <div className="p-4 m-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-xs font-bold uppercase text-slate-600">Active User</span>
-          <span className="text-xs font-bold text-indigo-700 uppercase">{currentRole}</span>
-        </div>
-        <p className="font-bold text-slate-900 text-xs truncate">{currentUser?.full_name || 'Not signed in'}</p>
-        {currentUser?.phone && <p className="text-xs text-slate-500 mt-0.5">{currentUser.phone}</p>}
-      </div>
-    </aside>
-  );
-};
+  return <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-slate-200 bg-slate-50 md:flex">
+    <Link href="/" aria-label="Fountain Gate Chapel, Change Pastures home" className="shrink-0 px-5 py-7"><Brand /></Link>
+    <nav aria-label="Primary" className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-5">
+      {permittedNavigation(currentRole).map(item => {
+        const active = isCurrentRoute(pathname, item.href);
+        const Icon = item.icon;
+        return <Link key={item.href} href={item.href} aria-current={active ? 'page' : undefined}
+          className={`flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${active ? 'bg-church-100 font-semibold text-church-900' : 'text-slate-600 hover:bg-church-50 hover:text-slate-900'}`}>
+          <Icon aria-hidden="true" size={18} strokeWidth={1.6} className="shrink-0" />
+          <span className="flex-1 leading-snug">{item.label}</span>
+          {item.badge === 'care' && atRiskCount > 0 && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-800">{atRiskCount}</span>}
+        </Link>;
+      })}
+    </nav>
+    <Link href="/settings" className="mx-4 flex min-h-16 shrink-0 items-center gap-3 border-t border-slate-200 py-4">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-church-100 text-church-800"><UserRound aria-hidden="true" size={18} strokeWidth={1.6} /></span>
+      <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{currentUser?.full_name || 'Not signed in'}</p><p className="text-xs capitalize text-slate-500">{currentRole} · View profile</p></div>
+      <ChevronRight aria-hidden="true" size={16} className="text-slate-500" />
+    </Link>
+  </aside>;
+}

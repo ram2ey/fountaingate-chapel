@@ -1,0 +1,7 @@
+const ts = require('typescript');
+module.exports = function transform(source) {
+  return ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
+    fileName: this.resourcePath,
+  }).outputText;
+};

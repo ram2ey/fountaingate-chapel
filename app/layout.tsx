@@ -9,8 +9,9 @@ import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Fountain Gate Chapel - Mobile Management System',
-  description: 'Mobile-first Church Management System for Fountain Gate Chapel featuring Pastoral Care, Member Directory, Sermon Hub, WhatsApp/SMS Communication, and Financial Ledger.',
+  title: 'Fountain Gate Chapel, Change Pastures - Church Portal',
+  description: 'Church Management System for Fountain Gate Chapel, Change Pastures featuring Pastoral Care, Member Directory, Sermon Hub, WhatsApp/SMS Communication, and Financial Ledger.',
+  icons: { icon: '/images/church-logo.jpeg', apple: '/images/church-logo.jpeg' },
 };
 
 export default async function RootLayout({
@@ -24,7 +25,7 @@ export default async function RootLayout({
   if(!user&&!['/login','/guest-intake','/kiosk'].includes(pathname||''))redirect('/login');
   return (
     <html lang="en">
-      <body className="bg-slate-50 text-slate-900 min-h-screen antialiased selection:bg-indigo-600 selection:text-white">
+      <body className="bg-slate-50 text-slate-900 min-h-screen antialiased selection:bg-church-600 selection:text-white">
         <ChurchProvider initialUser={user}>
             <AppLayout>
               {children}

@@ -34,11 +34,11 @@ export const MemberDirectoryTable: React.FC<Props> = ({ onSelectMember }) => {
       {/* Controls Bar */}
       <div className="p-4 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-800">
+          <span className="text-xs font-semibold text-slate-800">
             Members Directory ({filteredMembers.length})
           </span>
           {isAdmin && (
-            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold border border-amber-200">
+            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-semibold border border-amber-200">
               Admin Manual Intake Allowed
             </span>
           )}
@@ -49,7 +49,7 @@ export const MemberDirectoryTable: React.FC<Props> = ({ onSelectMember }) => {
           <select
             value={filterCell}
             onChange={(e) => setFilterCell(e.target.value)}
-            className="bg-white border border-slate-300 text-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-indigo-500 shadow-sm"
+            className="bg-white border border-slate-300 text-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-church-500 shadow-sm"
           >
             <option value="all">All Cell Groups</option>
             {cellGroups.map(cell => (
@@ -60,7 +60,7 @@ export const MemberDirectoryTable: React.FC<Props> = ({ onSelectMember }) => {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-white border border-slate-300 text-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-indigo-500 shadow-sm"
+            className="bg-white border border-slate-300 text-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-church-500 shadow-sm"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -74,7 +74,7 @@ export const MemberDirectoryTable: React.FC<Props> = ({ onSelectMember }) => {
       {/* Table Container */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs text-slate-700">
-          <thead className="bg-slate-100/90 text-slate-600 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+          <thead className="bg-slate-100/90 text-slate-600 font-semibold uppercase tracking-wider text-[10px] border-b border-slate-200">
             <tr>
               <th className="p-3 pl-4">Member Name</th>
               <th className="p-3">Phone & Email</th>
@@ -93,11 +93,11 @@ export const MemberDirectoryTable: React.FC<Props> = ({ onSelectMember }) => {
               >
                 <td className="p-3 pl-4">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-church-100 text-church-700 font-semibold flex items-center justify-center text-xs shrink-0">
                       {member.first_name[0]}{member.last_name[0]}
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900 leading-none">{member.first_name} {member.last_name}</p>
+                      <p className="font-semibold text-slate-900 leading-none">{member.first_name} {member.last_name}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Joined: {member.first_visited_at}</p>
                     </div>
                   </div>
@@ -113,7 +113,7 @@ export const MemberDirectoryTable: React.FC<Props> = ({ onSelectMember }) => {
                 </td>
 
                 <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border inline-block ${
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border inline-block ${
                     member.status === 'active' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
                     member.status === 'at_risk' ? 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse' :
                     member.status === 'first_time_guest' ? 'bg-amber-100 text-amber-800 border-amber-300' :
@@ -124,7 +124,7 @@ export const MemberDirectoryTable: React.FC<Props> = ({ onSelectMember }) => {
                 </td>
 
                 <td className="p-3 font-semibold">
-                  <span className={member.consecutive_absences >= 3 ? 'text-rose-600 font-bold' : 'text-slate-600'}>
+                  <span className={member.consecutive_absences >= 3 ? 'text-rose-600 font-semibold' : 'text-slate-600'}>
                     {member.consecutive_absences} wks
                   </span>
                 </td>
@@ -135,7 +135,7 @@ export const MemberDirectoryTable: React.FC<Props> = ({ onSelectMember }) => {
                       e.stopPropagation();
                       onSelectMember(member);
                     }}
-                    className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition"
+                    className="px-2.5 py-1 rounded-lg bg-church-50 hover:bg-church-100 text-church-700 font-semibold text-xs border border-church-200 transition"
                   >
                     View
                   </button>

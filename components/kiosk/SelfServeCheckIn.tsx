@@ -58,9 +58,9 @@ export const SelfServeCheckIn: React.FC<Props> = ({ onCheckInSuccess }) => {
           <button
             key={type}
             onClick={() => setSelectedEventType(type)}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition ${
+            className={`flex-1 py-2.5 rounded-xl font-semibold text-xs transition ${
               selectedEventType === type
-                ? 'bg-indigo-600 text-white shadow-md'
+                ? 'bg-church-600 text-white shadow-md'
                 : 'text-slate-700 hover:text-slate-900'
             }`}
           >
@@ -77,13 +77,13 @@ export const SelfServeCheckIn: React.FC<Props> = ({ onCheckInSuccess }) => {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Type Name or Phone Number..."
-            className="w-full text-center font-bold text-xl sm:text-2xl tracking-wide text-slate-900 bg-slate-100 border-2 border-slate-300 rounded-2xl p-4 focus:outline-none focus:border-indigo-600 focus:bg-white transition shadow-inner placeholder:text-slate-400 placeholder:text-base placeholder:font-normal placeholder:tracking-normal"
+            className="w-full text-center font-semibold text-xl sm:text-2xl tracking-wide text-slate-900 bg-slate-100 border-2 border-slate-300 rounded-2xl p-4 focus:outline-none focus:border-church-600 focus:bg-white transition shadow-inner placeholder:text-slate-400 placeholder:text-base placeholder:font-normal placeholder:tracking-normal"
           />
           {searchInput && (
             <button
               type="button"
               onClick={clearInput}
-              className="absolute right-4 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full bg-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-300"
+              className="absolute right-4 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full bg-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-300"
             >
               Clear
             </button>
@@ -97,7 +97,7 @@ export const SelfServeCheckIn: React.FC<Props> = ({ onCheckInSuccess }) => {
               key={num}
               type="button"
               onClick={() => appendDigit(num)}
-              className="py-3.5 rounded-2xl bg-slate-100 border border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 active:scale-95 text-slate-900 font-bold text-xl shadow-xs transition"
+              className="py-3.5 rounded-2xl bg-slate-100 border border-slate-200 hover:bg-church-50 hover:border-church-300 active:scale-95 text-slate-900 font-semibold text-xl shadow-xs transition"
             >
               {num}
             </button>
@@ -105,21 +105,21 @@ export const SelfServeCheckIn: React.FC<Props> = ({ onCheckInSuccess }) => {
           <button
             type="button"
             onClick={clearInput}
-            className="py-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 font-bold text-xs hover:bg-rose-100"
+            className="py-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 font-semibold text-xs hover:bg-rose-100"
           >
             Clear
           </button>
           <button
             type="button"
             onClick={() => appendDigit('0')}
-            className="py-3.5 rounded-2xl bg-slate-100 border border-slate-200 hover:bg-indigo-50 text-slate-900 font-bold text-xl"
+            className="py-3.5 rounded-2xl bg-slate-100 border border-slate-200 hover:bg-church-50 text-slate-900 font-semibold text-xl"
           >
             0
           </button>
           <button
             type="button"
             onClick={() => setSearchInput(prev => prev.slice(0, -1))}
-            className="py-3.5 rounded-2xl bg-slate-200 text-slate-800 font-bold text-xs hover:bg-slate-300"
+            className="py-3.5 rounded-2xl bg-slate-200 text-slate-800 font-semibold text-xs hover:bg-slate-300"
           >
             ⌫ Back
           </button>
@@ -128,7 +128,7 @@ export const SelfServeCheckIn: React.FC<Props> = ({ onCheckInSuccess }) => {
         <button
           type="submit"
           disabled={!searchInput}
-          className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-extrabold text-base shadow-md transition"
+          className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-semibold text-base shadow-md transition"
         >
           Check In Member
         </button>
@@ -137,13 +137,13 @@ export const SelfServeCheckIn: React.FC<Props> = ({ onCheckInSuccess }) => {
       {/* Search Results */}
       {hasSearched && (
         <div className="glass-panel p-5 rounded-3xl border border-slate-200 bg-white space-y-3 shadow-md animate-in fade-in">
-          <h4 className="font-display font-bold text-sm text-slate-900">
+          <h4 className="font-display font-semibold text-sm text-slate-900">
             {matchedMembers.length > 0 ? `Select Family Member (${matchedMembers.length})` : 'No Member Account Found'}
           </h4>
 
           {matchedMembers.length === 0 ? (
             <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs text-center space-y-2">
-              <p>No registered member account matched <span className="font-bold">{searchInput}</span>.</p>
+              <p>No registered member account matched <span className="font-semibold">{searchInput}</span>.</p>
               <p className="text-[11px] text-slate-500">Please see an usher or usherette to register on the Welcome Connect Card.</p>
             </div>
           ) : (
@@ -151,16 +151,16 @@ export const SelfServeCheckIn: React.FC<Props> = ({ onCheckInSuccess }) => {
               {matchedMembers.map(member => (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-indigo-400 transition"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-church-400 transition"
                 >
                   <div>
-                    <h5 className="font-bold text-slate-900 text-base">{member.first_name} {member.last_name}</h5>
+                    <h5 className="font-semibold text-slate-900 text-base">{member.first_name} {member.last_name}</h5>
                     <p className="text-xs text-slate-500">{member.phone}</p>
                   </div>
 
                   <button
                     onClick={() => handleConfirmCheckIn(member)}
-                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition"
+                    className="px-5 py-2.5 rounded-xl bg-church-600 hover:bg-church-700 text-white font-semibold text-xs shadow-md transition"
                   >
                     Confirm Check-In
                   </button>

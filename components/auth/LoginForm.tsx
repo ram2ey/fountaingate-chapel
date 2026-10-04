@@ -27,10 +27,10 @@ export function LoginForm() {
  }
  const credentials=['login','register','recovery','resend'].includes(mode);
  return <section className="max-w-lg mx-auto p-6 space-y-5 bg-white rounded-2xl border mt-12">
-  <h1 className="text-2xl font-bold">Fountain Gate account</h1>
-  <div className="flex flex-wrap gap-3">{(['login','register','recovery','resend'] as const).map(value=><button key={value} type="button" disabled={pending} className="underline" onClick={()=>{setMode(value);setMessage('');}}>{value==='resend'?'Resend verification':value}</button>)}</div>
+  <div><h1 className="text-2xl font-semibold">Fountain Gate account</h1><p className="mt-2 text-sm text-slate-500">Stay connected with your church family.</p></div>
+  <div className="flex flex-wrap gap-1 rounded-lg bg-slate-50 p-1">{(['login','register','recovery','resend'] as const).map(value=><button key={value} type="button" aria-pressed={mode===value} disabled={pending} className={`rounded-lg px-3 py-2 text-sm capitalize ${mode===value?'bg-white text-church-800 shadow-sm':'text-slate-600 hover:bg-church-100'}`} onClick={()=>{setMode(value);setMessage('');}}>{value==='resend'?'Resend verification':value}</button>)}</div>
   <form onSubmit={submit} className="space-y-4">
-   <p>{mode.replaceAll('-',' ')}</p>
+   <p className="text-sm font-medium capitalize text-slate-600">{mode.replaceAll('-',' ')}</p>
    {credentials&&<label className="block">Phone (international format)<input required name="phone" autoComplete="tel" type="tel" maxLength={32} placeholder="+233..." className="block w-full border rounded p-2"/></label>}
    {['login','register'].includes(mode)&&<label className="block">Branch ID<input required name="branch_id" className="block w-full border rounded p-2"/></label>}
    {mode==='register'&&<label className="block">Full name<input required name="full_name" maxLength={160} autoComplete="name" className="block w-full border rounded p-2"/></label>}
@@ -38,7 +38,7 @@ export function LoginForm() {
    {['verify','reset','invite-enroll','invite-accept'].includes(mode)&&<label className="block">Link token<input required value={token} onChange={e=>setToken(e.target.value)} maxLength={43} className="block w-full border rounded p-2"/></label>}
    {secret&&<p className="break-all">Authenticator secret: <code>{secret}</code></p>}
    {['login','invite-accept'].includes(mode)&&<label className="block">Authenticator code (required for staff)<input name="totp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} className="block w-full border rounded p-2"/></label>}
-   <button disabled={pending} className="bg-indigo-700 text-white rounded px-4 py-2">{pending?'Working…':'Continue'}</button>
+   <button disabled={pending} className="btn-primary w-full">{pending?'Working…':'Continue'}</button>
   </form><p role="status" aria-live="polite">{message}</p>
  </section>;
 }

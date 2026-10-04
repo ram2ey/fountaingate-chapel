@@ -1,16 +1,16 @@
 {
-  "short_name": "FG Kiosk",
-  "name": "Fountain Gate Chapel - Entrance Kiosk",
+  "short_name": "FGC Change Pastures",
+  "name": "Fountain Gate Chapel, Change Pastures - Entrance Kiosk",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/images/church-logo.jpeg",
+      "sizes": "1024x1002",
+      "type": "image/jpeg"
     }
   ],
   "start_url": "/kiosk",
-  "background_color": "#020617",
-  "theme_color": "#4f46e5",
+  "background_color": "#f7f5f0",
+  "theme_color": "#86692e",
   "display": "standalone",
   "orientation": "portrait"
 }

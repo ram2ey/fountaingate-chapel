@@ -9,15 +9,15 @@ export const AuditLogFeed: React.FC = () => {
   return (
     <div className="glass-panel p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 bg-white">
       <div>
-        <h4 className="font-display font-bold text-base text-slate-900">System Audit & Security Activity Feed</h4>
+        <h4 className="font-display font-semibold text-base text-slate-900">System Audit & Security Activity Feed</h4>
         <p className="text-xs text-slate-500">Real-time audit Trail tracking admin logins, care logs, and financial records</p>
       </div>
 
       <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
         {auditLogs.map((log) => (
           <div key={log.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-            <div className="flex items-center justify-between font-bold">
-              <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px]">
+            <div className="flex items-center justify-between font-semibold">
+              <span className="px-2 py-0.5 rounded bg-church-100 text-church-800 text-[10px]">
                 {log.action}
               </span>
               <span className="text-[10px] text-slate-400 font-normal">{log.created_at}</span>

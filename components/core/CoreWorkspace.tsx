@@ -44,7 +44,7 @@ export function CoreWorkspace({resource}:{resource:Resource}){
  const canModifyPrayer=(row:Row)=>row.author_id===currentUser?.id||currentRole==='pastor';
  async function moreGuestPrayers(){const sequence=++requestSequence.current.value;setLoading(true);try{const params=new URLSearchParams({view:'guest_prayers',cursor:guestCursor||'',search:applied});const response=await fetch('/api/core/care?'+params,{cache:'no-store'}),data=await response.json();if(!response.ok)throw Error(data.error);if(sequence===requestSequence.current.value){setGuestPrayers(old=>[...old,...data.items]);setGuestCursor(data.next_cursor);}}catch(e){if(sequence===requestSequence.current.value)setError((e as Error).message);}finally{if(sequence===requestSequence.current.value)setLoading(false);}}
  return <section className="space-y-5 max-w-5xl mx-auto">
-  <h1 className="text-2xl font-bold capitalize">{resource==='profile'?'Profile and preferences':resource}</h1>
+  <h1 className="text-2xl font-semibold capitalize">{resource==='profile'?'Profile and preferences':resource}</h1>
   {resource!=='profile'&&<form onSubmit={e=>{e.preventDefault();setLoading(true);if(search===applied)void load();else setApplied(search);}} className="flex gap-2"><label className="flex-1">Search<input value={search} onChange={e=>setSearch(e.target.value)} maxLength={100} className="block w-full border rounded p-2"/></label><button className="border p-2 rounded">Search</button></form>}
   {resource==='members'&&<label><input type="checkbox" checked={archived} onChange={e=>{setLoading(true);setArchived(e.target.checked);}}/> Show archived members</label>}
   {error&&<div role="alert" className="text-red-700"><p>{error}</p><button onClick={()=>{setLoading(true);void load();}} className="underline">Retry load</button><p>Your form entries are retained after a failed save.</p></div>}
@@ -52,12 +52,12 @@ export function CoreWorkspace({resource}:{resource:Resource}){
   <p role="status" className="text-green-800">{message}</p>
   {!loading&&!error&&!items.length&&resource!=='profile'&&<p>No matching records.</p>}
   {resource!=='audit'&&(resource!=='profile'||profile)&&<form key={resource==='profile'?JSON.stringify(profile):String(edit?.id||'new')} onSubmit={submit} className="p-5 rounded-xl bg-white border space-y-3">
-   <h2 className="font-bold">{edit?'Edit member':resource==='profile'?'Account details':resource==='guests'?'Advance guest follow-up':'Add record'}</h2>
+   <h2 className="font-semibold">{edit?'Edit member':resource==='profile'?'Account details':resource==='guests'?'Advance guest follow-up':'Add record'}</h2>
    {fields[resource].map(name=><label key={name} className="block capitalize">{name.replaceAll('_',' ')}{name==='body'?<textarea name={name} required maxLength={3000} className="block w-full border rounded p-2"/>:<input name={name} defaultValue={String((resource==='profile'?profile:edit)?.[name]||'')} type={name==='dob'||name==='follow_up_date'?'date':name==='email'?'email':'text'} required={['first_name','phone','member_id','body','title','full_name','id','stage'].includes(name)} maxLength={name==='address'?500:254} className="block w-full border rounded p-2"/>}</label>)}
    {resource==='care'&&<label><input type="checkbox" name="confidential" defaultChecked/> Confidential (pastors only)</label>}
    {resource==='prayers'&&<label className="block">Visibility<select name="visibility" className="border rounded p-2"><option value="private">Private: you and pastors</option><option value="branch">Visible to verified branch members</option></select></label>}
    {resource==='profile'&&<div className="flex gap-4"><label><input type="checkbox" name="sms" defaultChecked={Boolean(profile?.sms)}/> SMS announcements and reminders (uncheck to unsubscribe)</label><label><input type="checkbox" name="email" defaultChecked={Boolean(profile?.email)}/> Email consent</label></div>}
-   <button disabled={pending} className="bg-indigo-700 text-white p-2 rounded">{pending?'Saving…':'Save'}</button>{edit&&<button type="button" onClick={()=>setEdit(null)} className="ml-3 underline">Cancel editing</button>}
+   <button disabled={pending} className="bg-church-700 text-white p-2 rounded">{pending?'Saving…':'Save'}</button>{edit&&<button type="button" onClick={()=>setEdit(null)} className="ml-3 underline">Cancel editing</button>}
   </form>}
   {items.map(row=><article key={String(row.id)} className="p-4 border rounded-xl bg-white space-y-2">
    {Object.entries(row).filter(([key])=>!['reacted','reaction_count'].includes(key)).map(([key,value])=><p key={key} className="break-words text-sm"><strong>{key.replaceAll('_',' ')}: </strong>{String(value??'')}</p>)}
@@ -69,10 +69,10 @@ export function CoreWorkspace({resource}:{resource:Resource}){
     {canModifyPrayer(row)&&<form onSubmit={async e=>{e.preventDefault();const f=e.currentTarget;if(await save({id:row.id,action:'update',body:new FormData(f).get('body')}))f.reset();}} className="flex gap-2"><input aria-label="Prayer update" required name="body" maxLength={3000} className="border p-2 flex-1"/><button disabled={pending} className="underline">Add update</button></form>}
    </div>}
   </article>)}
-  {thread.length>0&&<section className="border p-4 rounded"><h2 className="font-bold">Discussion</h2>{thread.map(row=><p key={String(row.id)}>{String(row.kind)}: {String(row.body)}</p>)}</section>}
-  {guestPrayers.length>0&&<section className="border p-4 rounded"><h2 className="font-bold">Confidential guest prayers</h2>{guestPrayers.map(row=><p key={String(row.id)}>{String(row.member_id)}: {String(row.body)}</p>)}</section>}
+  {thread.length>0&&<section className="border p-4 rounded"><h2 className="font-semibold">Discussion</h2>{thread.map(row=><p key={String(row.id)}>{String(row.kind)}: {String(row.body)}</p>)}</section>}
+  {guestPrayers.length>0&&<section className="border p-4 rounded"><h2 className="font-semibold">Confidential guest prayers</h2>{guestPrayers.map(row=><p key={String(row.id)}>{String(row.member_id)}: {String(row.body)}</p>)}</section>}
   {guestCursor&&<button disabled={loading} onClick={moreGuestPrayers} className="border p-2">Load more guest prayers</button>}
-  {birthdays.length>0&&<section className="border p-4 rounded"><h2 className="font-bold">Upcoming birthdays (Africa/Accra calendar; leap-day observed 28 February)</h2>{birthdays.map(row=><p key={String(row.id)}>{String(row.first_name)} {String(row.last_name)}: {String(row.next_birthday)}</p>)}</section>}
+  {birthdays.length>0&&<section className="border p-4 rounded"><h2 className="font-semibold">Upcoming birthdays (Africa/Accra calendar; leap-day observed 28 February)</h2>{birthdays.map(row=><p key={String(row.id)}>{String(row.first_name)} {String(row.last_name)}: {String(row.next_birthday)}</p>)}</section>}
   {birthdayCursor&&<button disabled={loading} onClick={moreBirthdays} className="border p-2">Load more birthdays</button>}
   {cursor&&<button disabled={loading} onClick={()=>{setLoading(true);void load(true,cursor);}} className="border p-2 rounded">Load more</button>}
  </section>;
