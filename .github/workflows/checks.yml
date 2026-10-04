@@ -46,6 +46,7 @@ jobs:
           test "$(curl --silent -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/giving)" = "307"
           test "$(curl --silent -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/documents/00000000-0000-4000-8000-000000000001)" = "404"
       - run: docker build --target maintenance -t fgc-maintenance:check .
+      - run: docker build --target messaging-worker -t fgc-messaging:check .
       - name: Verify migrations with disposable PostgreSQL and least-privilege roles
         shell: bash
         run: |
@@ -57,10 +58,11 @@ jobs:
             if docker exec fgc-pg pg_isready -U postgres; then break; fi
             sleep 2
           done
-          docker exec fgc-pg psql -U postgres -v ON_ERROR_STOP=1 -c "CREATE ROLE fgc_owner LOGIN PASSWORD 'ci-owner' NOSUPERUSER NOBYPASSRLS; CREATE ROLE fgc_runtime LOGIN PASSWORD 'ci-web' NOSUPERUSER NOBYPASSRLS; CREATE ROLE fgc_auth LOGIN PASSWORD 'ci-auth' NOSUPERUSER NOBYPASSRLS; GRANT CREATE ON DATABASE postgres TO fgc_owner; ALTER SCHEMA public OWNER TO fgc_owner;"
+          docker exec fgc-pg psql -U postgres -v ON_ERROR_STOP=1 -c "CREATE ROLE fgc_owner LOGIN PASSWORD 'ci-owner' NOSUPERUSER NOBYPASSRLS; CREATE ROLE fgc_runtime LOGIN PASSWORD 'ci-web' NOSUPERUSER NOBYPASSRLS; CREATE ROLE fgc_auth LOGIN PASSWORD 'ci-auth' NOSUPERUSER NOBYPASSRLS; CREATE ROLE fgc_messaging LOGIN PASSWORD 'ci-message' NOSUPERUSER NOBYPASSRLS NOINHERIT; GRANT CREATE ON DATABASE postgres TO fgc_owner; ALTER SCHEMA public OWNER TO fgc_owner;"
           for attempt in 1 2; do
             docker run --rm --network fgc-ci -e MIGRATION_DATABASE_URL=postgresql://fgc_owner:ci-owner@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable fgc-maintenance:check
           done
           docker run --rm --network fgc-ci -e DATABASE_URL=postgresql://fgc_runtime:ci-web@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable fgc-maintenance:check node scripts/db-check.cjs
-          test "$(docker exec fgc-pg psql -U postgres -tAc 'SELECT count(*) FROM public.schema_migrations')" = "11"
+          test "$(docker exec fgc-pg psql -U postgres -tAc 'SELECT count(*) FROM public.schema_migrations')" = "12"
+          docker run --rm --network fgc-ci -e MESSAGING_DATABASE_URL=postgresql://fgc_messaging:ci-message@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable -e SMS_BROADCAST_ENABLED=true -e MNOTIFY_API_KEY=ci-unused -e MNOTIFY_SENDER_ID=FGC fgc-messaging:check node scripts/messaging-worker.cjs --once
           docker run --rm --network fgc-ci -e MIGRATION_DATABASE_URL=postgresql://fgc_owner:ci-owner@fgc-pg:5432/postgres -e DATABASE_SSL_MODE=disable fgc-maintenance:check node scripts/reconcile-attendance.cjs

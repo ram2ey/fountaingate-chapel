@@ -208,12 +208,14 @@ Tasks:
 1. Configure SMS and WhatsApp channels independently; support only channels with approved/configured provider access. Keep provider secrets server-side.
 2. Persist broadcasts and individual deliveries. Use a database outbox and a separately supervised worker deployed through Coolify so dispatch survives web redeploys. Record queued, provider-accepted, delivered and failed separately. Test worker shutdown, leases, retries and restart recovery; keep queue state outside container memory.
 3. Resolve recipients within authorized branches, normalize/deduplicate phone numbers and apply saved opt-ins/unsubscribes. Snapshot the recipient set for auditability.
-4. Add retry limits, backoff, idempotency and signed delivery callbacks. Provide failed-recipient summaries and a deliberate retry action.
+4. Add retry limits, backoff and idempotent queue submission. Use authenticated mNotify campaign polling because its public contract does not document callback signing or provider idempotency. Hold uncertain sends for reconciliation instead of blindly resending. Provide failed-recipient summaries and a deliberate retry action.
 5. Use the authenticated sender and persist editable templates. Reminders may reuse the same delivery pipeline.
 
 Exit checks: members cannot dispatch broadcasts; opted-out members are excluded; retry does not create duplicate sends where the provider supports idempotency; callback failures do not imply delivery; UI counts reflect real outcomes.
 
 External dependency: configured messaging accounts, sender/template approval where required and test recipients. Complete the adapter/queue and sandbox tests before enabling actual sends.
+
+Implementation status: SMS-only scope implemented with migration 0012, persisted templates, consent-aware recipient snapshots, a dedicated Coolify worker, bounded retries, authenticated reporting and real delivery counts. WhatsApp remains disabled by request. See [Phase 6 setup](docs/PHASE-6-SETUP.md). Live mNotify staging validation and production enablement remain deployment steps; no actual SMS was sent during implementation.
 
 ## Phase 7 — Genuine documents and media
 

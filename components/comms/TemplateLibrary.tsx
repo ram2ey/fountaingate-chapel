@@ -1,56 +1,11 @@
 'use client';
-
-import React from 'react';
-
-const TEMPLATES = [
-  {
-    title: 'Sunday Service Reminder',
-    category: 'Weekly Announcement',
-    text: 'Shalom Beloved, join us this Sunday at Fountain Gate Chapel for a powerful time of worship and word. Service starts at 8:30 AM.'
-  },
-  {
-    title: 'First-Time Guest Welcome',
-    category: 'Visitor Follow-up',
-    text: 'God bless you for worshipping with Fountain Gate Chapel today! We are honored to have you. Our pastoral team looks forward to connecting.'
-  },
-  {
-    title: 'Mid-week Teaching Service',
-    category: 'Bible Study',
-    text: 'Beloved member, join us for our Mid-week Teaching & Deliverance service this Wednesday at 6:00 PM. Come ready for prayer and Bible study.'
-  }
-];
-
-interface Props {
-  onSelectTemplate: (text: string) => void;
+import { useEffect,useState } from 'react';
+type Template={id:string;title:string;body:string;version:number};
+export function TemplateLibrary({onSelectTemplate}:{onSelectTemplate:(text:string)=>void}){
+ const [items,setItems]=useState<Template[]>([]),[edit,setEdit]=useState<Template|null>(null),[version,setVersion]=useState(0),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ useEffect(()=>{const abort=new AbortController();fetch('/api/communications?view=templates',{cache:'no-store',signal:abort.signal}).then(async response=>{const data=await response.json();if(!response.ok)throw new Error(data.error);if(!abort.signal.aborted)setItems(data.items);}).catch(e=>{if(!abort.signal.aborted)setError(e.message);});return()=>abort.abort();},[version]);
+ async function save(event:React.FormEvent<HTMLFormElement>){event.preventDefault();const form=event.currentTarget,data=new FormData(form);await write({action:'template',title:data.get('title'),body:data.get('body'),...(edit?{id:edit.id,version:edit.version}:{})},()=>{form.reset();setEdit(null);});}
+ async function write(body:object,after?:()=>void){setBusy(true);setError('');setNotice('');try{const response=await fetch('/api/communications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),data=await response.json();if(!response.ok)throw new Error(data.error);setNotice('Template saved.');after?.();setVersion(v=>v+1);}catch(e){setError(e instanceof Error?e.message:'Template could not be saved.');}finally{setBusy(false);}}
+ return <section className="rounded-2xl border bg-white p-5 space-y-4"><h2 className="font-bold text-lg">Message templates</h2><p className="text-sm text-slate-600">Plain-text templates saved for this branch. Review dates and service details before sending.</p>{error&&<p role="alert" className="text-rose-700">{error}</p>}{notice&&<p role="status" className="text-emerald-700">{notice}</p>}{!items.length&&<p>No saved templates.</p>}{items.map(t=><article key={t.id} className="rounded-xl bg-slate-50 border p-3 space-y-2"><h3 className="font-semibold">{t.title}</h3><p className="text-sm whitespace-pre-wrap">{t.body}</p><div className="flex gap-3 text-sm"><button className="text-indigo-700 underline" disabled={busy} onClick={()=>onSelectTemplate(t.body)}>Use template</button><button className="underline" disabled={busy} onClick={()=>setEdit(t)}>Edit</button><button className="text-rose-700 underline" disabled={busy} onClick={()=>void write({action:'archive_template',id:t.id})}>Archive</button></div></article>)}
+ <form key={edit?.id||'new'} onSubmit={save} className="space-y-3"><h3 className="font-semibold">{edit?'Edit template':'Create template'}</h3><label className="block">Title<input name="title" defaultValue={edit?.title} required maxLength={100} disabled={busy} className="block w-full border rounded-lg p-2"/></label><label className="block">Message<textarea name="body" defaultValue={edit?.body} required maxLength={1600} disabled={busy} rows={4} className="block w-full border rounded-lg p-2"/></label><button disabled={busy} className="rounded-lg bg-indigo-700 text-white px-4 py-2 disabled:opacity-50">Save template</button>{edit&&<button type="button" onClick={()=>setEdit(null)} className="ml-3 underline">Cancel edit</button>}</form></section>;
 }
-
-export const TemplateLibrary: React.FC<Props> = ({ onSelectTemplate }) => {
-  return (
-    <div className="glass-panel p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-      <div>
-        <h4 className="font-display font-bold text-base text-slate-900">Broadcast Message Templates</h4>
-        <p className="text-xs text-slate-500">Pre-formatted templates for pastoral announcements</p>
-      </div>
-
-      <div className="space-y-3">
-        {TEMPLATES.map((tmpl, idx) => (
-          <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-            <div className="flex items-center justify-between">
-              <h5 className="font-bold text-slate-900 text-xs">{tmpl.title}</h5>
-              <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px] font-bold">
-                {tmpl.category}
-              </span>
-            </div>
-            <p className="text-xs text-slate-700 leading-relaxed font-medium">{tmpl.text}</p>
-            <button
-              onClick={() => onSelectTemplate(tmpl.text)}
-              className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] transition shadow-xs"
-            >
-              Use Template →
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};

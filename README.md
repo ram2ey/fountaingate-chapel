@@ -72,6 +72,8 @@ CI builds and smoke-tests the Linux web container without production secrets and
 
 ## Environment separation and recovery
 
+Phase 6 implements SMS broadcasts through mNotify and a durable PostgreSQL outbox. Follow [the SMS and Coolify worker setup](docs/PHASE-6-SETUP.md) to provision the dedicated role, apply migration 0012 and deploy the `messaging-worker` Docker target. Broadcasting defaults disabled; WhatsApp is unavailable. Live provider testing remains a deployment prerequisite.
+
 Use separate domains, PostgreSQL databases/roles and upload volumes for development, staging and production. Tests use synthetic fixtures only inside the test process; no demo switch or runtime fallback exists. Keep provider sandbox/live credentials separate when those integrations are added.
 
 Back up PostgreSQL, upload bytes and Coolify control-plane configuration separately to an off-server destination. Save Coolify's APP_KEY separately in secure recovery storage. Verify restoration onto an isolated environment, including file metadata/bytes consistency. Server snapshots do not replace application backups, and Hetzner snapshots exclude attached Volumes. Detailed backup and release gates are in the implementation plan/runbook.

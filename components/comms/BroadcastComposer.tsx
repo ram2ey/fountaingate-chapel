@@ -1,11 +1,11 @@
-interface Props { initialMessage?: string; }
-
-export function BroadcastComposer(props: Props) {
-  void props;
-  return (
-    <section className="glass-panel p-5 border border-slate-200 space-y-2">
-      <h2 className="font-display font-bold text-base">Broadcasts unavailable</h2>
-      <p className="text-sm text-slate-600">WhatsApp and SMS broadcasts are currently unavailable.</p>
-    </section>
-  );
+'use client';
+import { useState } from 'react';
+interface Props { initialMessage?:string;smsEnabled:boolean;onQueued:()=>void; }
+export function BroadcastComposer({initialMessage='',smsEnabled,onQueued}:Props){
+ const [message,setMessage]=useState(initialMessage),[cell,setCell]=useState(''),[preview,setPreview]=useState<number|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[operation,setOperation]=useState(()=>crypto.randomUUID());
+ async function inspect(){setBusy(true);setError('');try{const response=await fetch('/api/communications?'+new URLSearchParams({view:'preview',...(cell?{cell_group:cell}:{})}),{cache:'no-store'}),data=await response.json();if(!response.ok)throw new Error(data.error);setPreview(data.count);}catch(e){setError(e instanceof Error?e.message:'Recipient preview unavailable.');}finally{setBusy(false);}}
+ async function queue(event:React.FormEvent){event.preventDefault();setBusy(true);setError('');setNotice('');try{const response=await fetch('/api/communications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'queue',operation_id:operation,channel:'sms',body:message,cell_group:cell})}),data=await response.json();if(!response.ok)throw new Error(data.error);setNotice('Broadcast saved in the delivery queue. Acceptance and delivery will appear in its report.');setOperation(crypto.randomUUID());setMessage('');setPreview(null);onQueued();}catch(e){setError(e instanceof Error?e.message:'Broadcast could not be queued.');}finally{setBusy(false);}}
+ return <section className="rounded-2xl border bg-white p-5 space-y-4"><h2 className="font-bold text-lg">Compose a broadcast</h2><p className="text-sm text-slate-600">SMS uses the church’s approved mNotify sender. WhatsApp is unavailable until a separate approved provider is configured.</p>{!smsEnabled&&<p className="rounded-lg bg-amber-50 p-3 text-amber-900">SMS dispatch is disabled pending worker and provider configuration. You can prepare templates and preview eligible recipients.</p>}{error&&<p role="alert" className="text-rose-700">{error}</p>}{notice&&<p role="status" className="text-emerald-700">{notice}</p>}
+ <form onSubmit={queue} className="space-y-4"><label className="block">Recipient cell group (leave empty for this branch)<input className="block w-full border rounded-lg p-2" value={cell} onChange={e=>{setCell(e.target.value);setPreview(null);setOperation(crypto.randomUUID());}} maxLength={100} disabled={busy}/></label><p className="text-xs text-slate-600">Only active members with verified matching phone numbers and saved SMS consent are included. Unlinked guests and opted-out members are excluded.</p><button type="button" className="text-indigo-700 underline disabled:opacity-50" disabled={busy} onClick={inspect}>Preview eligible recipients</button>{preview!==null&&<p role="status">{preview} eligible recipients now. Consent is checked again before dispatch.</p>}
+ <label className="block">Message<textarea required maxLength={1600} value={message} onChange={e=>setMessage(e.target.value)} rows={6} className="block w-full border rounded-lg p-3" disabled={busy}/></label><p className="text-xs text-slate-600">{message.length}/1600 characters. Long or Unicode messages may use multiple billable SMS segments. Members can unsubscribe in Settings.</p><button disabled={busy||!smsEnabled||!preview||preview>1000||!message.trim()} className="rounded-lg bg-indigo-700 text-white px-4 py-2 disabled:opacity-50">{busy?'Working…':'Queue SMS broadcast'}</button></form></section>;
 }

@@ -23,7 +23,7 @@ test('PDF statements are real, paginated, Unicode capable and reject missing gly
 
 test('ledger migration preserves legacy IDs, amounts, dates and archived donor history',async()=>{
  const {PGlite}=require('@electric-sql/pglite'),{createHash}=require('node:crypto');const db=new PGlite();try{
-  await db.exec('CREATE ROLE fgc_owner;CREATE ROLE fgc_runtime;CREATE ROLE fgc_auth;');const name=(await db.query('SELECT current_database() AS name')).rows[0].name;
+  await db.exec('CREATE ROLE fgc_owner;CREATE ROLE fgc_messaging;CREATE ROLE fgc_runtime;CREATE ROLE fgc_auth;');const name=(await db.query('SELECT current_database() AS name')).rows[0].name;
   await db.exec('GRANT CREATE ON DATABASE "'+name+'" TO fgc_owner;ALTER SCHEMA public OWNER TO fgc_owner;SET ROLE fgc_owner;');
   await db.exec('CREATE TABLE public.schema_migrations(name text PRIMARY KEY,checksum text NOT NULL)');
   for(const file of fs.readdirSync('db/migrations').filter(n=>n.endsWith('.sql')&&n<'0011').sort())await db.exec(fs.readFileSync('db/migrations/'+file,'utf8'));

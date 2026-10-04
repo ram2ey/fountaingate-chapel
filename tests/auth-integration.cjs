@@ -13,7 +13,7 @@ test('real auth handlers persist accounts, verify phones, change credentials and
  try{
   process.env.APP_ORIGIN='https://church.test';process.env.AUTH_ENCRYPTION_KEY=Buffer.alloc(32,7).toString('base64');
   process.env.MNOTIFY_API_KEY='test-only';process.env.MNOTIFY_SENDER_ID='FGC';
-  await db.exec('CREATE ROLE fgc_runtime;CREATE ROLE fgc_auth;CREATE ROLE fgc_owner;');
+  await db.exec('CREATE ROLE fgc_runtime;CREATE ROLE fgc_auth;CREATE ROLE fgc_owner;CREATE ROLE fgc_messaging;');
  const dbname=(await db.query('SELECT current_database() AS name')).rows[0].name;
  await db.exec('GRANT CREATE ON DATABASE "'+dbname+'" TO fgc_owner;ALTER SCHEMA public OWNER TO fgc_owner;SET ROLE fgc_owner;');
  await db.exec('CREATE TABLE public.schema_migrations(name text PRIMARY KEY,checksum text NOT NULL)');
@@ -267,6 +267,35 @@ test('real auth handlers persist accounts, verify phones, change credentials and
   await db.query("UPDATE public.payment_attempts SET verified_at=now()-interval '1 minute' WHERE reference=$1",[attempt.reference]);status='paid';assert.equal((await payments.reconcilePayment(attempt.reference)).status,'refunded');
   assert.equal((await db.query('SELECT sum(amount_minor)::text AS total FROM public.ledger_entries WHERE payment_id=(SELECT id FROM public.payment_attempts WHERE reference=$1)',[attempt.reference])).rows[0].total,'0');
   global.fetch=smsFetch;
+  // Phase 6 HTTP handlers and the separately authorized worker share durable SQL state.
+  const communications=require('../lib/server/communications-service.ts'),communicationsApi=require('../app/api/communications/route.ts');
+  const communicationsCall=body=>communicationsApi.POST(new Request('https://church.test/api/communications',{method:'POST',headers:{origin:'https://church.test','content-type':'application/json'},body:JSON.stringify(body)}));
+  await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);assert.equal((await communicationsCall({action:'template',title:'Unauthorized',body:'No send'})).status,403);
+  assert.equal((await communicationsApi.GET(new Request('https://church.test/api/communications'))).status,403);
+  await db.query("UPDATE identity.memberships SET role='admin' WHERE user_id=$1",[uid]);
+  const templateMessage=await communications.writeCommunications({action:'template',title:'Fixture announcement',body:'Persisted fixture message'});
+  assert.equal((await communications.readCommunications(new URL('https://church.test/api/communications?view=templates'))).items[0].id,templateMessage.id);
+  await communications.writeCommunications({action:'template',id:templateMessage.id,version:1,title:'Edited announcement',body:'Edited fixture message'});
+  await assert.rejects(communications.writeCommunications({action:'template',id:templateMessage.id,version:1,title:'Stale edit',body:'Must not overwrite'}),/Template changed/);
+  await db.query('UPDATE public.notification_preferences SET sms=true WHERE user_id=$1',[uid]);
+  assert.equal((await communications.readCommunications(new URL('https://church.test/api/communications?view=preview'))).count,1);
+  const broadcastBody={action:'queue',operation_id:crypto.randomUUID(),channel:'sms',body:'Fixture-only broadcast'};
+  process.env.SMS_BROADCAST_ENABLED='false';assert.equal((await communicationsCall(broadcastBody)).status,400);
+  process.env.SMS_BROADCAST_ENABLED='true';assert.equal((await communicationsCall({...broadcastBody,channel:'whatsapp'})).status,400);assert.equal((await communicationsCall({...broadcastBody,sender_id:'forged'})).status,400);
+  const queuedBroadcast=await communications.writeCommunications(broadcastBody);assert.equal((await communications.writeCommunications(broadcastBody)).id,queuedBroadcast.id);
+  await assert.rejects(communications.writeCommunications({...broadcastBody,body:'Conflicting retry'}),/conflict/);
+  const {processOne}=require('../scripts/messaging-worker.cjs');const workerDatabase={query:(sql,values)=>transaction('fgc_messaging')(client=>client.query(sql,values))};
+  let sends=0;const broadcastConfig={key:'fixture-only',sender:'FGC'};
+  await processOne(workerDatabase,{config:broadcastConfig,fetcher:async()=>{sends++;return Response.json({status:'success',code:'2000',summary:{total_sent:1,total_rejected:0,_id:'http-fixture-campaign'}});}});
+  let savedDelivery=(await db.query('SELECT * FROM public.message_deliveries WHERE broadcast_id=$1',[queuedBroadcast.id])).rows[0];assert.equal(sends,1);assert.equal(savedDelivery.state,'accepted');
+  await db.query('UPDATE public.message_deliveries SET next_attempt_at=now() WHERE id=$1',[savedDelivery.id]);
+  await processOne(workerDatabase,{config:broadcastConfig,fetcher:async()=>Response.json({status:'success',report:[{campaign_id:'http-fixture-campaign',recipient:phone.slice(1),message:broadcastBody.body,sender:'FORGED',status:'DELIVERED'}]})});
+  savedDelivery=(await db.query('SELECT * FROM public.message_deliveries WHERE id=$1',[savedDelivery.id])).rows[0];assert.equal(savedDelivery.state,'accepted');
+  await db.query('UPDATE public.message_deliveries SET next_attempt_at=now() WHERE id=$1',[savedDelivery.id]);
+  await processOne(workerDatabase,{config:broadcastConfig,fetcher:async()=>Response.json({status:'success',report:[{campaign_id:'http-fixture-campaign',recipient:phone.slice(1),message:broadcastBody.body,sender:'FGC',status:'DELIVERED'}]})});
+  const reports=await communications.readCommunications(new URL('https://church.test/api/communications'));assert.equal(reports.items[0].counts.delivered,1);
+  assert.equal((await communications.readCommunications(new URL('https://church.test/api/communications?view=deliveries&broadcast_id='+queuedBroadcast.id))).items[0].state,'delivered');
+  await communications.writeCommunications({action:'archive_template',id:templateMessage.id});assert.equal((await communications.readCommunications(new URL('https://church.test/api/communications?view=templates'))).items.length,0);
   await db.exec('DELETE FROM identity.rate_limits');
   for(let i=0;i<10;i++)assert.equal((await call('login',{phone,password:'wrong',branch_id:branch})).status,401);
   assert.equal((await call('login',{phone,password:'a recovered long password',branch_id:branch})).status,429);
@@ -274,7 +303,7 @@ test('real auth handlers persist accounts, verify phones, change credentials and
   assert.match(hashes[0].password_hash,/^\$argon2id\$/);
  }finally{
   Module._load=originalLoad;require.extensions['.ts']=originalTs;global.fetch=originalFetch;
-  for(const key of ['APP_ORIGIN','AUTH_ENCRYPTION_KEY','MNOTIFY_API_KEY','MNOTIFY_SENDER_ID','UPLOAD_DIRECTORY','PAYMENTS_ENABLED','HUBTEL_CONTRACT_CONFIRMED','HUBTEL_CLIENT_ID','HUBTEL_CLIENT_SECRET','HUBTEL_MERCHANT_ACCOUNT','HUBTEL_CALLBACK_TOKEN']){if(saved[key]===undefined)delete process.env[key];else process.env[key]=saved[key];}
+  for(const key of ['APP_ORIGIN','AUTH_ENCRYPTION_KEY','MNOTIFY_API_KEY','MNOTIFY_SENDER_ID','UPLOAD_DIRECTORY','PAYMENTS_ENABLED','HUBTEL_CONTRACT_CONFIRMED','HUBTEL_CLIENT_ID','HUBTEL_CLIENT_SECRET','HUBTEL_MERCHANT_ACCOUNT','HUBTEL_CALLBACK_TOKEN','SMS_BROADCAST_ENABLED']){if(saved[key]===undefined)delete process.env[key];else process.env[key]=saved[key];}
   await db.close();
  }
 });

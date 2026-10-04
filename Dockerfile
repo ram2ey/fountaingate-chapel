@@ -21,6 +21,14 @@ CMD ["node", "scripts/migrate.cjs"]
 FROM maintenance AS attendance-scheduler
 CMD ["node", "scripts/maintenance-host.cjs"]
 
+# Separately supervised private outbox dispatcher; no owner or identity credentials.
+FROM dependencies AS messaging-worker
+ENV NODE_ENV=production
+COPY scripts/messaging-worker.cjs ./scripts/messaging-worker.cjs
+COPY lib/server/database-config.cjs lib/server/messaging-provider.cjs ./lib/server/
+USER node
+CMD ["node", "scripts/messaging-worker.cjs"]
+
 FROM node:24-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
