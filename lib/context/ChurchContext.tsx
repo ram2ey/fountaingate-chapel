@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type {
-  Member, UserRole, CareNote, Sermon, Contribution, Broadcast,
+  Member, UserRole, CareNote, Sermon, Broadcast,
   GuestRetentionItem, SystemUser, AuditLog, PrayerRequest, PrayerStatus,
   PastoralDocument
 } from '../types/church';
@@ -23,8 +23,6 @@ interface ChurchContextType {
   sermons: Sermon[];
   addSermon: (sermon: Omit<Sermon, 'id' | 'views_count'>) => void;
   toggleLiveSermon: (sermonId: string) => void;
-  contributions: Contribution[];
-  addContribution: (contribution: Omit<Contribution, 'id'>) => void;
   careNotes: CareNote[];
   addCareNote: (note: Omit<CareNote, 'id' | 'created_at'>) => void;
   broadcasts: Broadcast[];
@@ -84,7 +82,6 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode; initialUser?:
     systemUsers: [],
     members: [],
     sermons: [],
-    contributions: [],
     careNotes: [],
     broadcasts: [],
     guestRetention: [],
@@ -104,7 +101,6 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode; initialUser?:
     deleteMember: unavailableOperation,
     addSermon: unavailableOperation,
     toggleLiveSermon: unavailableOperation,
-    addContribution: unavailableOperation,
     addCareNote: unavailableOperation,
     sendBroadcast: unavailableOperation,
     updateGuestRetention: unavailableOperation,

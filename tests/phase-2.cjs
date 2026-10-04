@@ -38,7 +38,7 @@ test('clean PostgreSQL migrations and runtime RLS enforce branch, identity and c
  assert.equal((await asActor('admin',()=>db.query('SELECT * FROM public.documents WHERE id=$1',[privateDoc]))).rows.length,0);
  assert.equal((await asActor('member',()=>db.query('SELECT * FROM public.documents WHERE id=$1',[privateDoc]))).rows.length,0);
  // Missing context cannot select any sensitive domain rows or modify migration history.
- for(const table of ['profiles','households','services','attendance','service_expectations','attendance_operations','care_notes','prayers','prayer_comments','prayer_updates','prayer_reactions','guest_followups','followup_tasks','documents','document_versions','notification_preferences','audit_events','contributions']) {
+ for(const table of ['profiles','households','services','attendance','service_expectations','attendance_operations','care_notes','prayers','prayer_comments','prayer_updates','prayer_reactions','guest_followups','followup_tasks','documents','document_versions','notification_preferences','audit_events','contributions','ledger_entries','payment_attempts']) {
   assert.equal((await asActor('',()=>db.query('SELECT * FROM public.'+table))).rows.length,0,table);
  }
  await assert.rejects(asActor('admin',()=>db.query("INSERT INTO public.schema_migrations VALUES('fake','checksum')")),/permission denied/);
@@ -54,11 +54,11 @@ test('clean PostgreSQL migrations and runtime RLS enforce branch, identity and c
  assert.equal((await asActor('admin',()=>db.query('SELECT * FROM public.prayers'))).rows.length,0);
  await asActor('member',async()=>{await db.query('INSERT INTO public.prayer_reactions(branch_id,prayer_id,user_id) VALUES($1,$2,identity.actor())',[branch,prayer]);assert.equal((await db.query('DELETE FROM public.prayer_reactions WHERE prayer_id=$1 RETURNING user_id',[prayer])).rows.length,1);});
  await assert.rejects(asActor('member',()=>db.query('UPDATE public.prayers SET author_id=$1 WHERE id=$2',[actors.admin,prayer])),/permission denied/);
- await asActor('admin',()=>db.query("INSERT INTO public.contributions(branch_id,member_id,amount_minor,currency,fund,method,recorded_by) VALUES($1,$2,100,'GHS','offering','cash',identity.actor())",[branch,member]));
+ await assert.rejects(asActor('admin',()=>db.query("INSERT INTO public.contributions(branch_id,member_id,amount_minor,currency,fund,method,recorded_by) VALUES($1,$2,100,'GHS','offering','cash',identity.actor())",[branch,member])),/permission denied/);
  await db.query("INSERT INTO public.contributions(branch_id,member_id,amount_minor,currency,fund,method,recorded_by) VALUES($1,$2,100,'GHS','offering','cash',$3)",[branch,member,actors.admin]);
  assert.equal((await asActor('member',()=>db.query('SELECT * FROM public.contributions'))).rows.length,1);
  assert.equal((await asActor('pastor',()=>db.query('SELECT * FROM public.contributions'))).rows.length,0);
- await assert.rejects(asActor('pastor',()=>db.query("INSERT INTO public.contributions(branch_id,amount_minor,currency,fund,method,recorded_by) VALUES($1,100,'GHS','offering','cash',identity.actor())",[branch])),/row-level security/);
+ await assert.rejects(asActor('pastor',()=>db.query("INSERT INTO public.contributions(branch_id,amount_minor,currency,fund,method,recorded_by) VALUES($1,100,'GHS','offering','cash',identity.actor())",[branch])),/permission denied/);
  await asActor('admin',()=>db.query("INSERT INTO public.audit_events(branch_id,actor_id,action,entity_type) VALUES(identity.branch(),identity.actor(),'tested','test')"));
  await assert.rejects(asActor('admin',()=>db.query("UPDATE public.audit_events SET action='forged'")),/permission denied/);
  await assert.rejects(asActor('admin',()=>db.query('DELETE FROM public.audit_events')),/permission denied/);

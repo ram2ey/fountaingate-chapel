@@ -1,6 +1,8 @@
 # Fountain Gate Chapel
 
-Phases 2–4 add PostgreSQL-backed accounts, core church workflows, dated attendance, offline kiosk synchronization and attendance analytics. No demo mode or seeded account exists. Payments, messaging campaigns and media integrations remain later phases.
+Phases 2–5 add PostgreSQL-backed accounts, core church workflows, dated attendance, offline kiosk synchronization, an immutable giving ledger, financial reports and real PDF/CSV exports. Hubtel giving uses GHS and remains disabled until merchant configuration and contract validation are complete. No demo mode or seeded account exists. Messaging campaigns and media integrations remain later phases.
+
+Finance deployment and Hubtel activation: [Phase 5 setup](docs/PHASE-5-SETUP.md).
 
 Read [Phase 2 setup](docs/PHASE-2-SETUP.md), [permission matrix](docs/AUTHORIZATION.md) and [Coolify runbook](docs/COOLIFY.md).
 

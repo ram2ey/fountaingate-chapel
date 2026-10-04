@@ -179,13 +179,17 @@ Exit checks: repeated online/offline check-ins create one record; reconnecting o
 
 ## Phase 5 — Financial ledger, payments and statements
 
+Implementation delivered with migration 0011, immutable ledger/reversals, confirmed-portal refund recording, reports and real exports. Online giving is configured for Hubtel, GHS, mobile money/cards and Africa/Accra. Merchant hosted API confirmation and account staging checks remain activation requirements; see [Phase 5 setup](docs/PHASE-5-SETUP.md). Checkout defaults to disabled.
+
+User deferred merchant-portal details and live activation on 2026-10-04. Keep these as a follow-up; the application must not enable checkout while they remain unresolved.
+
 Audit coverage: 5, 6, 7, 12, 17, 21.
 
 Tasks:
 
 1. Separate a payment attempt from a posted contribution. Add explicit pending/paid/failed/refunded states, verified provider reference, amount/currency and reconciliation metadata.
 2. Validate amount, precision, currency, member relation and fund on the server and with database constraints. Enforce unique references/idempotency keys. Preserve anonymous donor support without guessing identity by name.
-3. Create checkout on the server using one configured provider. Verify signed webhooks and independently validate transaction/reference/amount/currency before posting the contribution. Handle duplicate and out-of-order callbacks safely. A browser success redirect must not post money. Verify the production HTTPS callback through Coolify, raw-body signature validation, proxy headers and payload/time limits.
+3. Create Hubtel checkout on the server. Independently validate transaction/reference/amount/GHS using an authenticated provider status lookup before posting the contribution. The public Hubtel sources do not specify a verified callback signature contract: use a random callback capability and treat its body as an untrusted notification; add exact raw-body signature verification if merchant documentation requires it. Handle duplicate and out-of-order callbacks safely. A browser success redirect must not post money. Confirm hosted API contracts and test the production HTTPS callback through Coolify, proxy behavior and payload/time limits before activation.
 4. Retain a separately authorized manual-entry flow for cash/bank giving. Add controlled corrections/reversals with reasons and an audit history instead of destructive financial edits.
 5. Filter totals by selected branch, date interval, currency and relevant payment state. Compute monthly and annual windows in the church timezone. Remove hard-coded currency labels and budgets; configure budgets if used.
 6. Generate actual PDF receipts/statements from authorized ledger queries. Include selected year, actual currency, church/donor information, references and totals; verify multi-page layout and file validity.

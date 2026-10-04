@@ -45,7 +45,7 @@ Phase 4 attendance reconciliation is implemented. Deploy the private `attendance
 
 Deploy a separately supervised worker when Phase 6 implements the PostgreSQL outbox. Use durable leases/idempotency and graceful shutdown; web restarts must not lose jobs. Coolify scheduled tasks will run bounded attendance/reminder commands using UTC schedules and explicit church timezone calculations. Their commands must exist in the deployed maintenance/worker image before enabling schedules. Phase 1 does not start pretend workers or schedules.
 
-Configure real payment/messaging callbacks on stable HTTPS endpoints only when implemented. Verify raw-body signatures, allowed proxy behavior, payload limits, duplicate events and test/live separation. Do not enable current unavailable actions just because a container is healthy.
+Phase 5 finance is implemented; follow [the finance and Hubtel setup](PHASE-5-SETUP.md). Apply migration 0011 separately, configure Hubtel credentials at runtime and keep payment gates disabled until the merchant contracts and staging workflows are validated. Hubtel notifications use a callback capability plus authenticated status verification; no public signature contract was verified. Suppress callback path/query logging and add the exact provider signature check if merchant documentation requires it. Verify payload limits, duplicate events, HTTPS routing and test/live separation. Messaging callbacks remain a Phase 6 integration.
 
 ## Backup and host-loss recovery
 

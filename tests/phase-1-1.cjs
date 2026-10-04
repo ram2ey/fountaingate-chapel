@@ -48,7 +48,7 @@ try {
   assert.equal('setCurrentRole' in context, false);
   checks++;
 
-  const lists = ['systemUsers', 'members', 'sermons', 'contributions', 'careNotes',
+  const lists = ['systemUsers', 'members', 'sermons', 'careNotes',
     'broadcasts', 'guestRetention', 'auditLogs', 'prayerRequests', 'pastoralDocuments'];
   for (const name of lists) assert.deepEqual(context[name], [], name);
   checks++;
@@ -94,7 +94,7 @@ try {
   for (const name of ['FinancialBreakdownChart']) {
     const Component = require('../components/dashboard/' + name + '.tsx')[name];
     const html = render(React.createElement(Component));
-    assert.match(html, /currently unavailable/);
+    assert.match(html, /Loading giving totals/);
     assert.doesNotMatch(html, /428|94%|8,450|\+12%|<svg/);
   }
   checks++;

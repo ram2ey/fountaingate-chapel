@@ -198,6 +198,75 @@ test('real auth handlers persist accounts, verify phones, change credentials and
   await db.query('SELECT identity.reconcile_attendance(100)');assert.equal((await db.query('SELECT count(*)::integer AS n FROM public.service_expectations WHERE service_id=$1',[cell.id])).rows[0].n,0);
   await assert.rejects(attendance.writeAttendance({action:'service',name:'Impossible date',event_type:'service',starts_at:'2026-02-31T10:00:00Z',ends_at:'2026-03-04T10:00:00Z',attendance_eligible:true}),/Invalid date/);
   await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);await assert.rejects(attendance.readAttendance('analytics',null),/Access denied/);assert.ok((await attendance.readAttendance('personal',null)).items.length);
+  // Phase 5: real ledger handlers, non-owner SQL permissions and external transport fixtures.
+  const finance=require('../lib/server/finance-service.ts'),financeApi=require('../app/api/finance/route.ts');
+  const crypto=require('node:crypto');
+  await db.query("UPDATE identity.memberships SET role='admin' WHERE user_id=$1",[uid]);
+  const manual={action:'manual',operation_id:crypto.randomUUID(),amount:'123.45',currency:'GHS',fund:'offering',method:'cash',reference:'quoted "reference", =SUM(1,2)',member_id:ownMember,given_at:'2026-01-01T00:00:00Z',reason:'Fixture only'};
+  const posted=await finance.writeFinance(manual);assert.equal((await finance.writeFinance(manual)).id,posted.id);
+  await assert.rejects(finance.writeFinance({...manual,amount:'123.46'}),/conflicts/);
+  await assert.rejects(finance.writeFinance({...manual,operation_id:crypto.randomUUID(),amount:'-1'}),/positive/);
+  await assert.rejects(finance.writeFinance({...manual,operation_id:crypto.randomUUID(),given_at:'2026-02-31T00:00:00Z'}),/Invalid date/);
+  await assert.rejects(finance.writeFinance({...manual,operation_id:crypto.randomUUID(),fund:'invented'}),/supported/);
+  await finance.writeFinance({...manual,operation_id:crypto.randomUUID(),currency:'USD',reference:'usd'});
+  await finance.writeFinance({...manual,operation_id:crypto.randomUUID(),given_at:'2025-12-31T23:59:59Z',reference:'prior-year'});
+  const reversal={action:'reverse',operation_id:crypto.randomUUID(),id:posted.id,amount:'23.45',reason:'Partial fixture reversal'};
+  await finance.writeFinance(reversal);await finance.writeFinance(reversal);
+  await assert.rejects(finance.writeFinance({...reversal,operation_id:crypto.randomUUID(),amount:'100.01'}),/exceeds/);
+  const annual=await finance.readFinance(new URL('https://church.test/api/finance?year=2026'));assert.equal(annual.totals.find(t=>t.currency==='GHS').net_minor,'10000');assert.equal(annual.totals.find(t=>t.currency==='USD').net_minor,'12345');
+  assert.equal(annual.monthly.find(t=>t.month==='2026-01'&&t.currency==='GHS').net_minor,'12345');
+  const prior=await finance.readFinance(new URL('https://church.test/api/finance?year=2025'));assert.equal(prior.items.length,1);
+  const {authorizedTransaction}=require('../lib/server/auth.ts');
+  await assert.rejects(authorizedTransaction('finance',c=>c.query('UPDATE public.ledger_entries SET amount_minor=1')),/permission denied/);
+  await assert.rejects(authorizedTransaction('finance',c=>c.query('DELETE FROM public.ledger_entries')),/permission denied/);
+  await assert.rejects(authorizedTransaction('finance',c=>c.query("SELECT identity.post_verified_payment('fake','fake',1,'GHS','success',now(),0,'fake')")),/permission denied/);
+  const csv=await financeApi.GET(new Request('https://church.test/api/finance?year=2026&format=csv'));assert.equal(csv.status,200);assert.match(await csv.text(),/quoted ""reference"", =SUM/);assert.equal(csv.headers.get('cache-control'),'no-store');
+  const pdfResponse=await financeApi.GET(new Request('https://church.test/api/finance?year=2026&format=pdf'));assert.equal(pdfResponse.status,200);const pdfBytes=Buffer.from(await pdfResponse.arrayBuffer());assert.equal(pdfBytes.subarray(0,4).toString(),'%PDF');
+  const {PDFDocument}=require('pdf-lib');assert.ok((await PDFDocument.load(pdfBytes)).getPageCount()>0);
+  const givingReceipt=await finance.readFinance(new URL('https://church.test/api/finance?receipt='+posted.id+'&year=2025'));assert.equal(givingReceipt.items.length,2);assert.equal(givingReceipt.totals[0].net_minor,'10000');
+  // Identical names never replace the member/profile relation.
+  const duplicate=(await db.query("INSERT INTO public.members(branch_id,first_name,last_name) SELECT branch_id,first_name,last_name FROM public.members WHERE id=$1 RETURNING id",[ownMember])).rows[0].id;
+  await finance.writeFinance({...manual,operation_id:crypto.randomUUID(),member_id:duplicate,reference:'same-name'});
+  await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);
+  await assert.rejects(finance.readFinance(new URL('https://church.test/api/finance')),/Access denied/);
+  assert.equal((await finance.readFinance(new URL('https://church.test/api/finance?scope=own&year=2026&member_id='+duplicate))).items.length,0);
+  assert.equal((await finance.readFinance(new URL('https://church.test/api/finance?scope=own&year=2026'))).items.length,3);
+  assert.equal((await financeApi.GET(new Request('https://church.test/api/finance?format=pdf'))).status,403);
+  const payments=require('../lib/server/payment-service.ts'),payApi=require('../app/api/payments/[action]/route.ts'),callbackApi=require('../app/api/payments/callback/[token]/route.ts');
+  await assert.rejects(payments.createPayment({}),/not configured/);
+  Object.assign(process.env,{PAYMENTS_ENABLED:'true',HUBTEL_CONTRACT_CONFIRMED:'true',HUBTEL_CLIENT_ID:'fixture',HUBTEL_CLIENT_SECRET:'fixture-secret',HUBTEL_MERCHANT_ACCOUNT:'12345',HUBTEL_CALLBACK_TOKEN:Buffer.alloc(32,8).toString('base64url')});
+  const smsFetch=global.fetch;let initialized=0,status='unpaid',providerAmount=50;
+  global.fetch=async(url,options)=>{const address=new URL(url);assert.equal(options.headers.Authorization,'Basic '+Buffer.from('fixture:fixture-secret').toString('base64'));assert.equal(options.redirect,'error');
+   if(address.hostname==='payproxyapi.hubtel.com'){initialized++;const body=JSON.parse(options.body);assert.equal(body.totalAmount,50);return Response.json({responseCode:'0000',data:{clientReference:body.clientReference,checkoutUrl:'https://pay.hubtel.com/fixture-checkout'}});}
+   assert.equal(address.hostname,'checkout.hubtel.com');return Response.json({data:{clientReference:address.searchParams.get('clientReference'),transactionID:'fixture-'+address.searchParams.get('clientReference'),amount:providerAmount,currencyCode:'GHS',status}});
+  };
+  const paymentBody={operation_id:crypto.randomUUID(),amount:'50.00',fund:'tithe',anonymous:false};
+  const attempt=await payments.createPayment(paymentBody);assert.equal((await payments.createPayment(paymentBody)).reference,attempt.reference);assert.equal(initialized,1);
+  assert.equal((await db.query('SELECT * FROM public.ledger_entries WHERE reference=$1',[attempt.reference])).rows.length,0);
+  assert.equal((await payApi.GET(new Request('https://church.test/api/payments/success'),{params:Promise.resolve({action:'success'})})).status,404);
+  const notify=token=>callbackApi.POST(new Request('https://church.test/api/payments/callback/'+token+'?reference='+attempt.reference,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({status:'paid',amount:999999})}),{params:Promise.resolve({token})});
+  assert.equal((await notify('forged')).status,404);assert.equal((await notify(process.env.HUBTEL_CALLBACK_TOKEN)).status,200);
+  assert.equal((await db.query('SELECT * FROM public.ledger_entries WHERE reference=$1',[attempt.reference])).rows.length,0);
+  await db.query("UPDATE public.payment_attempts SET verified_at=now()-interval '1 minute' WHERE reference=$1",[attempt.reference]);providerAmount=51;status='paid';
+  await assert.rejects(payments.reconcilePayment(attempt.reference),/did not match/);
+  providerAmount=50;assert.equal((await payments.reconcilePayment(attempt.reference)).status,'paid');
+  await db.query("UPDATE public.payment_attempts SET verified_at=now()-interval '1 minute' WHERE reference=$1",[attempt.reference]);assert.equal((await notify(process.env.HUBTEL_CALLBACK_TOKEN)).status,200);
+  assert.equal((await db.query('SELECT * FROM public.ledger_entries WHERE reference=$1',[attempt.reference])).rows.length,1);
+  await db.query("UPDATE public.payment_attempts SET verified_at=now()-interval '1 minute' WHERE reference=$1",[attempt.reference]);status='failed';assert.equal((await payments.reconcilePayment(attempt.reference)).status,'paid');
+  // Refund recording requires a real stored document and a finance-capable session.
+  const credit=(await db.query('SELECT id FROM public.ledger_entries WHERE reference=$1',[attempt.reference])).rows[0].id;
+  await db.query("UPDATE identity.memberships SET role='admin' WHERE user_id=$1",[uid]);
+  const proof=(await db.query("INSERT INTO public.documents(branch_id,owner_id,title) VALUES($1,$2,'Refund fixture evidence') RETURNING id",[branch,uid])).rows[0].id;
+  const confirmed={action:'refund',operation_id:crypto.randomUUID(),id:credit,amount:'20.00',reference:'refund-fixture',reason:'Confirmed in portal fixture',document_id:proof};
+  await assert.rejects(finance.writeFinance(confirmed),/evidence unavailable/);
+  await db.query("INSERT INTO public.document_versions(branch_id,document_id,version,storage_key,media_type,byte_size,digest) VALUES($1,$2,1,$3,'application/pdf',10,'fixture')",[branch,proof,crypto.randomUUID()]);
+  const refund=await finance.writeFinance(confirmed);assert.equal((await finance.writeFinance(confirmed)).id,refund.id);
+  await assert.rejects(finance.writeFinance({...confirmed,operation_id:crypto.randomUUID(),amount:'30.01',reference:'excess'}),/exceeds/);
+  await finance.writeFinance({...confirmed,operation_id:crypto.randomUUID(),amount:'30.00',reference:'remaining'});
+  assert.equal((await db.query('SELECT status FROM public.payment_attempts WHERE reference=$1',[attempt.reference])).rows[0].status,'refunded');
+  await db.query("UPDATE public.payment_attempts SET verified_at=now()-interval '1 minute' WHERE reference=$1",[attempt.reference]);status='paid';assert.equal((await payments.reconcilePayment(attempt.reference)).status,'refunded');
+  assert.equal((await db.query('SELECT sum(amount_minor)::text AS total FROM public.ledger_entries WHERE payment_id=(SELECT id FROM public.payment_attempts WHERE reference=$1)',[attempt.reference])).rows[0].total,'0');
+  global.fetch=smsFetch;
   await db.exec('DELETE FROM identity.rate_limits');
   for(let i=0;i<10;i++)assert.equal((await call('login',{phone,password:'wrong',branch_id:branch})).status,401);
   assert.equal((await call('login',{phone,password:'a recovered long password',branch_id:branch})).status,429);
@@ -205,7 +274,7 @@ test('real auth handlers persist accounts, verify phones, change credentials and
   assert.match(hashes[0].password_hash,/^\$argon2id\$/);
  }finally{
   Module._load=originalLoad;require.extensions['.ts']=originalTs;global.fetch=originalFetch;
-  for(const key of ['APP_ORIGIN','AUTH_ENCRYPTION_KEY','MNOTIFY_API_KEY','MNOTIFY_SENDER_ID','UPLOAD_DIRECTORY']){if(saved[key]===undefined)delete process.env[key];else process.env[key]=saved[key];}
+  for(const key of ['APP_ORIGIN','AUTH_ENCRYPTION_KEY','MNOTIFY_API_KEY','MNOTIFY_SENDER_ID','UPLOAD_DIRECTORY','PAYMENTS_ENABLED','HUBTEL_CONTRACT_CONFIRMED','HUBTEL_CLIENT_ID','HUBTEL_CLIENT_SECRET','HUBTEL_MERCHANT_ACCOUNT','HUBTEL_CALLBACK_TOKEN']){if(saved[key]===undefined)delete process.env[key];else process.env[key]=saved[key];}
   await db.close();
  }
 });

@@ -1,8 +1,3 @@
-export function PdfStatementGenerator() {
-  return (
-    <section className="glass-panel p-5 border border-slate-200 space-y-2">
-      <h2 className="font-display font-bold text-base">Statements unavailable</h2>
-      <p className="text-sm text-slate-600">Giving statement downloads are currently unavailable.</p>
-    </section>
-  );
+export function PdfStatementGenerator({query}:{query:string}){
+ return <div className="flex flex-wrap gap-4 text-sm"><a className="text-indigo-700 underline" href={'/api/finance?'+query+'&format=pdf'}>Download PDF statement</a><a className="text-indigo-700 underline" href={'/api/finance?'+query+'&format=csv'}>Export CSV</a></div>;
 }
