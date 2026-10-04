@@ -4,7 +4,6 @@ const fs=require('node:fs');
 const Module=require('node:module');
 const ts=require('typescript');
 const {PGlite}=require('@electric-sql/pglite');
-const {TOTP,Secret}=require('otpauth');
 
 test('real auth handlers persist accounts, verify phones, change credentials and revoke sessions',async()=>{
  const db=new PGlite({extensions:{pg_trgm:require('@electric-sql/pglite/contrib/pg_trgm').pg_trgm}});const jar=new Map();let delivered=[],loseFileCommit=false;
@@ -55,6 +54,8 @@ test('real auth handlers persist accounts, verify phones, change credentials and
   assert.equal((await call('register',{phone,password:'different valid password',branch_id:branch,full_name:'Duplicate'})).status,200);
   assert.equal((await db.query('SELECT * FROM public.members')).rows.length,1);
   assert.equal((await call('login',{phone,password:'pre-registration attacker password',branch_id:branch})).status,401);
+  assert.equal((await call('login',{phone,password,branch_id:'00000000-0000-4000-8000-000000000000'})).status,401);
+  assert.equal((await call('login',{phone,password})).status,400);
   assert.equal((await call('login',{phone,password,branch_id:branch})).status,200);
   const session=jar.get('fgc_session');assert.ok(session);
   const me=await route.GET(new Request('https://church.test/api/auth/session'),{params:Promise.resolve({action:'session'})});assert.equal((await me.json()).user.phone,phone);
@@ -71,19 +72,19 @@ test('real auth handlers persist accounts, verify phones, change credentials and
   const resetToken=delivered.at(-1).message.match(/#reset=([A-Za-z0-9_-]+)/)[1];
   assert.equal((await call('reset',{token:resetToken,password:'a recovered long password'})).status,200);
   assert.equal((await call('reset',{token:resetToken,password:'replay recovered password'})).status,400);
-  // Staff enrollment requires invitation possession, the existing password and proof of TOTP.
+  // Staff invitations and login use the existing password without authenticator enrollment.
   const {newToken,tokenDigest}=require('../lib/server/auth.ts');const invitation=newToken();
   const uid=(await db.query('SELECT id FROM identity.users WHERE phone=$1',[phone])).rows[0].id;
   await db.query("INSERT INTO identity.tokens(token_hash,user_id,phone,purpose,branch_id,invited_role,expires_at) VALUES($1,$2,$3,'staff_invite',$4,'pastor',now()+interval '1 hour')",[tokenDigest(invitation),uid,phone,branch]);
-  const enroll=await call('invite-enroll',{token:invitation,password:'a recovered long password'});assert.equal(enroll.status,200);const enrollment=await enroll.json();
-  const totp=new TOTP({secret:Secret.fromBase32(enrollment.secret),algorithm:'SHA1',digits:6,period:30});
-  assert.equal((await call('invite-accept',{token:invitation,password:'a recovered long password',totp:totp.generate()})).status,200);
-  assert.equal((await call('login',{phone,password:'a recovered long password',branch_id:branch})).status,401);
-  const last=await db.query('SELECT totp_last_counter FROM identity.users WHERE id=$1',[uid]);
-  // Advance only the test fixture's replay marker; no production clock bypass exists.
-  await db.query('UPDATE identity.users SET totp_last_counter=$1 WHERE id=$2',[Number(last.rows[0].totp_last_counter)-1,uid]);
-  assert.equal((await call('login',{phone,password:'a recovered long password',branch_id:branch,totp:totp.generate()})).status,200);
-  assert.equal((await call('login',{phone,password:'a recovered long password',branch_id:branch,totp:totp.generate()})).status,401);
+  assert.equal((await call('invite-accept',{token:invitation,password:'wrong'})).status,400);
+  assert.equal((await call('invite-accept',{token:invitation,password:'a recovered long password'})).status,200);
+  assert.equal((await call('invite-accept',{token:invitation,password:'a recovered long password'})).status,400);
+  assert.equal((await call('login',{phone,password:'a recovered long password',branch_id:branch})).status,200);
+  assert.equal((await (await route.GET(new Request('https://church.test'),{params:Promise.resolve({action:'session'})})).json()).user.role,'pastor');
+  await db.exec("BEGIN;SET LOCAL ROLE fgc_runtime");
+  await db.query("SELECT set_config('fgc.session_token',$1,true)",[jar.get('fgc_session')]);
+  assert.equal((await db.query("SELECT identity.has_capability('directory') AS allowed")).rows[0].allowed,true);
+  await db.exec('COMMIT');
   await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);
   const {requirePageAccess}=require('../lib/server/page-access.ts');
   assert.equal(await requirePageAccess('staff'),false);

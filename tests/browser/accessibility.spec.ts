@@ -12,8 +12,10 @@ test('account forms have labels, accessible contrast and no mobile overflow',asy
 });
 test('keyboard reaches the form and invalid submission sends no message',async({page})=>{
  await page.goto('/login');
+ await expect(page.getByLabel('Branch ID')).toBeVisible();
+ await expect(page.getByLabel(/Authenticator/)).toHaveCount(0);
  let submissions=0;page.on('request',request=>{if(request.method()==='POST')submissions++;});
- await page.getByRole('button',{name:'Continue',exact:true}).click();
+ await page.getByRole('button',{name:'Sign in',exact:true}).click();
  await expect(page.getByLabel('Phone (international format)')).toBeFocused();
  expect(submissions).toBe(0);
  await page.keyboard.press('Tab');await expect(page.getByLabel('Branch ID')).toBeFocused();

@@ -4,7 +4,6 @@ import { currentSession, newToken, readSession, SESSION_COOKIE, setSessionCookie
 import { assertOrigin, normalizedPhone, rateLimit, requestBody, uuid } from '../../../../lib/server/auth-input';
 import { hashPassword, validatePassword, verifyPassword } from '../../../../lib/server/password';
 import { sendAuthMessage, smsConfigured } from '../../../../lib/server/mnotify';
-import { decryptSecret, encryptSecret, newTotp, totpCounter } from '../../../../lib/server/totp';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -57,16 +56,9 @@ export async function POST(request:Request,{params}:{params:Promise<{action:stri
         dummyHash ||= hashPassword(newToken());
         const valid=await verifyPassword(account?.password_hash||await dummyHash,body.password as string);
         if(!valid||!account||account.disabled_at||!account.phone_verified_at)return false;
-        let mfa=false;
-        if(account.role!=='member') {
-          if(!account.totp_secret_encrypted)return false;
-          const counter=totpCounter(decryptSecret(account.totp_secret_encrypted),body.totp);
-          if(counter===null||counter<=Number(account.totp_last_counter))return false;
-          await client.query('UPDATE identity.users SET totp_last_counter=$1 WHERE id=$2',[counter,account.id]);mfa=true;
-        }
         const previous=(await cookies()).get(SESSION_COOKIE)?.value;
         if(previous)await client.query('UPDATE identity.sessions SET revoked_at=now() WHERE token_hash=$1',[tokenDigest(previous)]);
-        await client.query(`INSERT INTO identity.sessions(token_hash,user_id,branch_id,expires_at,mfa_verified_at) VALUES($1,$2,$3,now()+interval '8 hours',CASE WHEN $4 THEN now() END)`,[tokenDigest(token),account.id,body.branch_id,mfa]);await client.query("INSERT INTO identity.audit_events(user_id,branch_id,action) VALUES($1,$2,'sign_in')",[account.id,body.branch_id]);return true;
+        await client.query(`INSERT INTO identity.sessions(token_hash,user_id,branch_id,expires_at) VALUES($1,$2,$3,now()+interval '8 hours')`,[tokenDigest(token),account.id,body.branch_id]);await client.query("INSERT INTO identity.audit_events(user_id,branch_id,action) VALUES($1,$2,'sign_in')",[account.id,body.branch_id]);return true;
       });
       if(!success)return reply({error:'Invalid credentials or verification required.'},401);
       await setSessionCookie(token);return reply({user:await readSession(token)});
@@ -132,14 +124,6 @@ export async function POST(request:Request,{params}:{params:Promise<{action:stri
         const invitation=(await client.query(`SELECT t.*,u.password_hash,u.phone_verified_at,u.disabled_at FROM identity.tokens t JOIN identity.users u ON u.id=t.user_id
           WHERE t.token_hash=$1 AND t.purpose='staff_invite' AND t.consumed_at IS NULL AND t.expires_at>now() FOR UPDATE OF t,u`,[tokenDigest(body.token as string)])).rows[0];
         if(!invitation||invitation.disabled_at||!invitation.phone_verified_at||!await verifyPassword(invitation.password_hash,body.password as string))return null;
-        if(action==='invite-enroll') {
-          const totp=newTotp(invitation.phone);
-          await client.query('UPDATE identity.tokens SET enrollment_secret=$1 WHERE token_hash=$2',[encryptSecret(totp.secret.base32),tokenDigest(body.token as string)]);
-          return {uri:totp.toString(),secret:totp.secret.base32};
-        }
-        if(!invitation.enrollment_secret)return null;
-        const counter=totpCounter(decryptSecret(invitation.enrollment_secret),body.totp);if(counter===null)return null;
-        await client.query('UPDATE identity.users SET totp_secret_encrypted=$1,totp_last_counter=$2 WHERE id=$3',[invitation.enrollment_secret,counter,invitation.user_id]);
         await client.query(`INSERT INTO identity.memberships(user_id,branch_id,role) VALUES($1,$2,$3) ON CONFLICT(user_id,branch_id) DO UPDATE SET role=excluded.role`,[invitation.user_id,invitation.branch_id,invitation.invited_role]);
         await client.query('UPDATE identity.tokens SET consumed_at=now(),enrollment_secret=NULL WHERE token_hash=$1',[tokenDigest(body.token as string)]);
         await client.query('UPDATE identity.sessions SET revoked_at=now() WHERE user_id=$1',[invitation.user_id]);await client.query("INSERT INTO identity.audit_events(user_id,branch_id,action) VALUES($1,$2,'staff_invitation_accepted')",[invitation.user_id,invitation.branch_id]);return {ok:true};

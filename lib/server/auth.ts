@@ -19,7 +19,7 @@ export async function readSession(token: string | undefined): Promise<SessionUse
       JOIN identity.memberships m ON m.user_id=u.id AND m.branch_id=s.branch_id JOIN public.branches b ON b.id=s.branch_id
       WHERE s.token_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND u.disabled_at IS NULL
       AND u.phone_verified_at IS NOT NULL AND b.archived_at IS NULL AND p.archived_at IS NULL
-      AND (m.role='member' OR s.mfa_verified_at IS NOT NULL)`, [tokenDigest(token)]);
+`, [tokenDigest(token)]);
     return result.rows[0] || null;
   });
 }

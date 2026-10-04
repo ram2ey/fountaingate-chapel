@@ -22,7 +22,7 @@ async function main(){
   const url=new URL('https://api.mnotify.com/api/sms/quick');url.searchParams.set('key',process.env.MNOTIFY_API_KEY);
   const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(10000),body:JSON.stringify({recipient:[phone.number.slice(1)],sender,message:`Fountain Gate staff invitation: ${origin.origin}/login#invite=${token} . Expires in 24 hours.`,is_schedule:false,sms_type:'otp'})});
   const data=await response.json();if(!response.ok||data.status!=='success'||String(data.code)!=='2000'||Number(data.summary?.total_sent)!==1||Number(data.summary?.total_rejected)>0)throw Error('Provider rejected invitation');
-  console.log('Bootstrap invitation accepted by SMS provider. Complete authenticator enrollment before sign-in.');
+  console.log('Bootstrap invitation accepted by SMS provider. Accept the invitation using your existing password before sign-in.');
  }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error;}finally{await client.end();}
 }
 main().catch(()=>{console.error('Bootstrap invitation failed. Verify configuration, verified account, branch and provider balance. A provider timeout may still deliver; avoid automatic retries.');process.exitCode=1;});
