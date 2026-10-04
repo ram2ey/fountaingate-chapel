@@ -21,7 +21,8 @@ export const Sidebar: React.FC = () => {
     { label: 'Pastoral Documents', href: '/documents', roles: ['admin', 'pastor'] },
     { label: 'Prayer Wall & Testimonies', href: '/prayer-wall', roles: ['admin', 'pastor', 'member'] },
     { label: 'Sermon & Media Hub', href: '/sermons', roles: ['admin', 'pastor', 'member'] },
-    { label: 'WhatsApp & SMS Broadcast', href: '/communications', roles: ['admin', 'pastor'] },
+    { label: 'SMS Broadcasts', href: '/communications', roles: ['admin', 'pastor'] },
+    { label: 'Operational status', href: '/operations', roles: ['admin', 'pastor'] },
     { label: 'Financial Ledger', href: '/financials', roles: ['admin'] },
     { label: 'Tablet Entrance Kiosk', href: '/kiosk', roles: ['admin', 'pastor'] },
     { label: 'Admin Management Panel', href: '/admin', roles: ['admin'] },
@@ -38,13 +39,13 @@ export const Sidebar: React.FC = () => {
           </div>
           <div>
             <h1 className="font-display font-extrabold text-sm text-slate-900 leading-tight">FOUNTAIN GATE</h1>
-            <p className="text-[10px] tracking-wider font-semibold text-amber-600 uppercase">Chapel Management</p>
+            <p className="text-xs tracking-wider font-semibold text-amber-700 uppercase">Chapel Management</p>
           </div>
         </div>
 
         {/* Navigation Menu */}
-        <nav className="p-3 space-y-1">
-          <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        <nav aria-label="Primary" className="p-3 space-y-1">
+          <div className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-slate-600">
             Modules & Ecosystem
           </div>
 
@@ -58,7 +59,8 @@ export const Sidebar: React.FC = () => {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                aria-current={isActive?'page':undefined}
+                className={`flex items-center justify-between min-h-[44px] px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                   isActive
                     ? 'bg-indigo-600 text-white shadow-md font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -66,7 +68,7 @@ export const Sidebar: React.FC = () => {
               >
                 <span>{item.label}</span>
                 {item.badge !== undefined && (
-                  <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold animate-pulse">
+                  <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-xs font-bold animate-pulse">
                     {item.badge}
                   </span>
                 )}
@@ -79,11 +81,11 @@ export const Sidebar: React.FC = () => {
       {/* Footer User Info */}
       <div className="p-4 m-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold uppercase text-slate-400">Active User</span>
-          <span className="text-[10px] font-bold text-indigo-700 uppercase">{currentRole}</span>
+          <span className="text-xs font-bold uppercase text-slate-600">Active User</span>
+          <span className="text-xs font-bold text-indigo-700 uppercase">{currentRole}</span>
         </div>
         <p className="font-bold text-slate-900 text-xs truncate">{currentUser?.full_name || 'Not signed in'}</p>
-        {currentUser?.phone && <p className="text-[10px] text-slate-500 mt-0.5">{currentUser.phone}</p>}
+        {currentUser?.phone && <p className="text-xs text-slate-500 mt-0.5">{currentUser.phone}</p>}
       </div>
     </aside>
   );

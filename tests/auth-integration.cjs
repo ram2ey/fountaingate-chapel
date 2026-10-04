@@ -7,7 +7,7 @@ const {PGlite}=require('@electric-sql/pglite');
 const {TOTP,Secret}=require('otpauth');
 
 test('real auth handlers persist accounts, verify phones, change credentials and revoke sessions',async()=>{
- const db=new PGlite();const jar=new Map();let delivered=[],loseFileCommit=false;
+ const db=new PGlite({extensions:{pg_trgm:require('@electric-sql/pglite/contrib/pg_trgm').pg_trgm}});const jar=new Map();let delivered=[],loseFileCommit=false;
  const originalLoad=Module._load,originalTs=require.extensions['.ts'];
  const originalFetch=global.fetch;const saved={...process.env};
  try{
@@ -344,6 +344,25 @@ test('real auth handlers persist accounts, verify phones, change credentials and
   const reports=await communications.readCommunications(new URL('https://church.test/api/communications'));assert.equal(reports.items[0].counts.delivered,1);
   assert.equal((await communications.readCommunications(new URL('https://church.test/api/communications?view=deliveries&broadcast_id='+queuedBroadcast.id))).items[0].state,'delivered');
   await communications.writeCommunications({action:'archive_template',id:templateMessage.id});assert.equal((await communications.readCommunications(new URL('https://church.test/api/communications?view=templates'))).items.length,0);
+  // Phase 8 real SQL: operational privacy, bounded paging and leap-day dates.
+  const operations=require('../lib/server/operations-service.ts');
+  await db.query("INSERT INTO public.payment_attempts(branch_id,actor_id,operation_id,fingerprint,provider,reference,amount_minor,currency,fund) SELECT $1,$2,gen_random_uuid(),'phase8-test-only','hubtel','phase8-attempt-'||n,100,'GHS','offering' FROM generate_series(1,55)n",[branch,uid]);
+  const attemptsPage=await finance.readFinance(new URL('https://church.test/api/finance?view=attempts&year=2026'));assert.equal(attemptsPage.attempts.length,50);assert.ok(attemptsPage.next_attempt_cursor);
+  const attemptsNext=await finance.readFinance(new URL('https://church.test/api/finance?view=attempts&year=2026&attempt_after='+attemptsPage.next_attempt_cursor));assert.equal(new Set([...attemptsPage.attempts,...attemptsNext.attempts].map(row=>row.id)).size,attemptsPage.attempts.length+attemptsNext.attempts.length);assert.equal(attemptsNext.next_attempt_cursor,null);
+  const ops=await operations.readOperations();assert.ok(ops.payments);assert.equal(Object.hasOwn(ops,'body'),false);
+  await db.query("UPDATE identity.memberships SET role='pastor' WHERE user_id=$1",[uid]);
+  assert.equal((await operations.readOperations()).payments,null);
+  assert.ok(Array.isArray((await core.readCore('birthdays',new URL('https://church.test/api/core/birthdays'))).items));
+  assert.equal((await db.query("SELECT identity.next_birthday('2000-02-29','2027-02-01')::text AS day")).rows[0].day,'2027-02-28');
+  await db.query("INSERT INTO public.care_notes(branch_id,member_id,author_id,body,confidential) SELECT $1,$2,$3,'Phase8 paging fixture '||n,true FROM generate_series(1,30)n",[branch,added.id,uid]);
+  await db.query("INSERT INTO public.guest_prayers(branch_id,member_id,body) SELECT $1,$2,'Phase8 guest prayer '||n FROM generate_series(1,30)n",[branch,added.id]);
+  const guestPage=await core.readCore('care',new URL('https://church.test/api/core/care?view=guest_prayers&search=Phase8'));assert.equal(guestPage.items.length,25);
+  const guestNext=await core.readCore('care',new URL('https://church.test/api/core/care?view=guest_prayers&search=Phase8&cursor='+guestPage.next_cursor));assert.equal(guestNext.items.length,5);assert.equal(new Set([...guestPage.items,...guestNext.items].map(row=>row.id)).size,30);
+  const carePage=await core.readCore('care',new URL('https://church.test/api/core/care?search=Phase8'));assert.equal(carePage.items.length,25);assert.ok(carePage.next_cursor);
+  const careNext=await core.readCore('care',new URL('https://church.test/api/core/care?search=Phase8&cursor='+carePage.next_cursor));assert.equal(careNext.items.length,5);assert.equal(new Set([...carePage.items,...careNext.items].map(row=>row.id)).size,30);
+  await db.query("UPDATE identity.memberships SET role='admin' WHERE user_id=$1",[uid]);assert.equal((await core.readCore('care',new URL('https://church.test/api/core/care?search=Phase8'))).items.length,0);
+  const summary=await finance.readFinance(new URL('https://church.test/api/finance?view=summary&year=2026'));assert.equal(summary.items.length,0);assert.equal(summary.attempts.length,0);assert.ok(summary.totals.length);
+  await db.query("UPDATE identity.memberships SET role='member' WHERE user_id=$1",[uid]);await assert.rejects(operations.readOperations(),/Access denied/);
   await db.exec('DELETE FROM identity.rate_limits');
   for(let i=0;i<10;i++)assert.equal((await call('login',{phone,password:'wrong',branch_id:branch})).status,401);
   assert.equal((await call('login',{phone,password:'a recovered long password',branch_id:branch})).status,429);

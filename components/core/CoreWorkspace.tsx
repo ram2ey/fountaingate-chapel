@@ -12,6 +12,7 @@ export function CoreWorkspace({resource}:{resource:Resource}){
  const [search,setSearch]=useState(''),[applied,setApplied]=useState(''),[archived,setArchived]=useState(false),[cursor,setCursor]=useState<string|null>(null);
  const [loading,setLoading]=useState(true),[pending,setPending]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[edit,setEdit]=useState<Row|null>(null),[profile,setProfile]=useState<Row|null>(null),[thread,setThread]=useState<Row[]>([]);
  const requestSequence=useRef({value:0});
+ const [guestCursor,setGuestCursor]=useState<string|null>(null),[birthdayCursor,setBirthdayCursor]=useState<string|null>(null);
  const load=useCallback(async(append=false,next:string|null=null)=>{
   const sequence=++requestSequence.current.value;
   try{
@@ -20,11 +21,12 @@ export function CoreWorkspace({resource}:{resource:Resource}){
    if(sequence!==requestSequence.current.value)return;
    setError('');
    if(resource==='profile')setProfile({...data.profile,...data.preferences});else setItems(previous=>append?[...previous,...data.items]:data.items);
-   setGuestPrayers(data.guest_prayers||[]);setCursor(data.next_cursor||null);
-   if(resource==='members'){const r=await fetch('/api/core/birthdays',{cache:'no-store'});const b=await r.json();if(r.ok&&sequence===requestSequence.current.value)setBirthdays(b.items);}
+   if(!append){setGuestPrayers(data.guest_prayers||[]);setGuestCursor(data.next_guest_cursor||null);}setCursor(data.next_cursor||null);
+   if(resource==='members'&&!append){const r=await fetch('/api/core/birthdays',{cache:'no-store'});const b=await r.json();if(r.ok&&sequence===requestSequence.current.value){setBirthdays(b.items);setBirthdayCursor(b.next_cursor||null);}}
   }catch(e){if(sequence===requestSequence.current.value)setError(e instanceof Error?e.message:'Load failed.');}finally{if(sequence===requestSequence.current.value)setLoading(false);}
  },[resource,applied,archived]);
  useEffect(()=>{const tracker=requestSequence.current;let active=true;queueMicrotask(()=>{if(active)void load();});return ()=>{active=false;tracker.value++;};},[load]);
+ async function moreBirthdays(){if(!birthdayCursor)return;setLoading(true);const sequence=++requestSequence.current.value;try{const response=await fetch('/api/core/birthdays?cursor='+birthdayCursor,{cache:'no-store'}),data=await response.json();if(!response.ok)throw Error(data.error);if(sequence===requestSequence.current.value){setBirthdays(previous=>[...previous,...data.items]);setBirthdayCursor(data.next_cursor||null);}}catch(e){if(sequence===requestSequence.current.value)setError(e instanceof Error?e.message:'Birthdays unavailable.');}finally{if(sequence===requestSequence.current.value)setLoading(false);}}
  async function save(body:Record<string,unknown>){
   setPending(true);setError('');setMessage('');try{
    const response=await fetch(`/api/core/${resource}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await response.json();if(!response.ok)throw Error(data.error);
@@ -40,6 +42,7 @@ export function CoreWorkspace({resource}:{resource:Resource}){
  }
  async function showThread(id:string){try{const response=await fetch(`/api/core/prayers?thread=${id}`,{cache:'no-store'}),data=await response.json();if(!response.ok)throw Error(data.error);setThread(data.thread||[]);}catch{setError('Thread unavailable.');}}
  const canModifyPrayer=(row:Row)=>row.author_id===currentUser?.id||currentRole==='pastor';
+ async function moreGuestPrayers(){const sequence=++requestSequence.current.value;setLoading(true);try{const params=new URLSearchParams({view:'guest_prayers',cursor:guestCursor||'',search:applied});const response=await fetch('/api/core/care?'+params,{cache:'no-store'}),data=await response.json();if(!response.ok)throw Error(data.error);if(sequence===requestSequence.current.value){setGuestPrayers(old=>[...old,...data.items]);setGuestCursor(data.next_cursor);}}catch(e){if(sequence===requestSequence.current.value)setError((e as Error).message);}finally{if(sequence===requestSequence.current.value)setLoading(false);}}
  return <section className="space-y-5 max-w-5xl mx-auto">
   <h1 className="text-2xl font-bold capitalize">{resource==='profile'?'Profile and preferences':resource}</h1>
   {resource!=='profile'&&<form onSubmit={e=>{e.preventDefault();setLoading(true);if(search===applied)void load();else setApplied(search);}} className="flex gap-2"><label className="flex-1">Search<input value={search} onChange={e=>setSearch(e.target.value)} maxLength={100} className="block w-full border rounded p-2"/></label><button className="border p-2 rounded">Search</button></form>}
@@ -68,7 +71,9 @@ export function CoreWorkspace({resource}:{resource:Resource}){
   </article>)}
   {thread.length>0&&<section className="border p-4 rounded"><h2 className="font-bold">Discussion</h2>{thread.map(row=><p key={String(row.id)}>{String(row.kind)}: {String(row.body)}</p>)}</section>}
   {guestPrayers.length>0&&<section className="border p-4 rounded"><h2 className="font-bold">Confidential guest prayers</h2>{guestPrayers.map(row=><p key={String(row.id)}>{String(row.member_id)}: {String(row.body)}</p>)}</section>}
-  {birthdays.length>0&&<section className="border p-4 rounded"><h2 className="font-bold">Upcoming birthdays (UTC calendar; leap-day observed 28 February)</h2>{birthdays.map(row=><p key={String(row.id)}>{String(row.first_name)} {String(row.last_name)}: {String(row.next_birthday)}</p>)}</section>}
+  {guestCursor&&<button disabled={loading} onClick={moreGuestPrayers} className="border p-2">Load more guest prayers</button>}
+  {birthdays.length>0&&<section className="border p-4 rounded"><h2 className="font-bold">Upcoming birthdays (Africa/Accra calendar; leap-day observed 28 February)</h2>{birthdays.map(row=><p key={String(row.id)}>{String(row.first_name)} {String(row.last_name)}: {String(row.next_birthday)}</p>)}</section>}
+  {birthdayCursor&&<button disabled={loading} onClick={moreBirthdays} className="border p-2">Load more birthdays</button>}
   {cursor&&<button disabled={loading} onClick={()=>{setLoading(true);void load(true,cursor);}} className="border p-2 rounded">Load more</button>}
  </section>;
 }

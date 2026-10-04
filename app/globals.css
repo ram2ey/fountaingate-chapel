@@ -66,3 +66,21 @@ h1, h2, h3, h4, h5, h6 {
 .animate-live-pulse {
   animation: live-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+.accessible-dialog { margin: auto; width: min(32rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain; }
+.accessible-dialog::backdrop { background: rgb(15 23 42 / 65%); }
+:where(button,a,input,select,textarea,summary):focus-visible { outline: 3px solid #4338ca !important; outline-offset: 3px; }
+:where(button,summary,select,input:not([type='checkbox']):not([type='radio'])) { min-height: 44px; }
+:where(input[type='checkbox'],input[type='radio']) { min-width: 20px; min-height: 20px; }
+label { line-height: 1.5; }
+button:disabled { cursor: not-allowed; }
+.skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 100; padding: .75rem 1rem; background: #312e81; color: white; transform: translateY(-200%); }
+.skip-link:focus { transform: translateY(0); }
+@media (max-width: 640px) {
+  :where(input,select,textarea) { font-size: 16px; }
+  :where(.text-xs) { font-size: .875rem; line-height: 1.5; }
+  :where(a) { overflow-wrap: anywhere; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

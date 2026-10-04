@@ -1,7 +1,7 @@
 import 'server-only';
 import type { PoolClient } from 'pg';
 import { authorizedTransaction } from './auth';
-import { allowedFields, boolean, date, identifier, InputError, nextBirthday, text } from './core-validation';
+import { allowedFields, boolean, date, identifier, InputError, text } from './core-validation';
 import { normalizedPhone } from './auth-input';
 import type { Capability } from '../auth/permissions';
 
@@ -25,8 +25,12 @@ export async function readCore(resource:Resource,url:URL){
    const result=await client.query("SELECT id,author_id,body,created_at,'comment' AS kind FROM public.prayer_comments WHERE prayer_id=$1 AND archived_at IS NULL UNION ALL SELECT id,author_id,body,created_at,'update' AS kind FROM public.prayer_updates WHERE prayer_id=$1 AND archived_at IS NULL ORDER BY created_at,id LIMIT 100",[id]);return {thread:result.rows};
   }
   if(resource==='birthdays'){
-   const today=new Date().toISOString().slice(0,10);const rows=await client.query<{id:string;first_name:string;last_name:string;dob:string}>('SELECT id,first_name,last_name,to_char(dob,\'YYYY-MM-DD\') AS dob FROM public.members WHERE archived_at IS NULL AND dob IS NOT NULL');
-   await audit(client,'read','birthdays');return {items:rows.rows.map(row=>({id:row.id,first_name:row.first_name,last_name:row.last_name,next_birthday:nextBirthday(row.dob,today)})).sort((a,b)=>a.next_birthday.localeCompare(b.next_birthday)||a.id.localeCompare(b.id)).slice(0,limit)};
+   const rows=await client.query("SELECT id,first_name,last_name,to_char(identity.next_birthday(dob,(now() AT TIME ZONE 'Africa/Accra')::date),'YYYY-MM-DD') AS next_birthday FROM public.members WHERE archived_at IS NULL AND dob IS NOT NULL AND ($1::date IS NULL OR (identity.next_birthday(dob,(now() AT TIME ZONE 'Africa/Accra')::date),id)>($1::date,$2::uuid)) ORDER BY next_birthday,id LIMIT $3",[after?.[0]||null,after?.[1]||null,limit+1]);
+   const items=rows.rows.slice(0,limit);await audit(client,'read','birthdays');return {items,next_cursor:rows.rows.length>limit?Buffer.from(JSON.stringify([items.at(-1).next_birthday,items.at(-1).id])).toString('base64url'):null};
+  }
+  if(resource==='care'&&url.searchParams.get('view')==='guest_prayers'){
+   const result=await client.query("SELECT id,member_id,body,created_at FROM public.guest_prayers WHERE archived_at IS NULL AND body ILIKE $1 AND EXISTS(SELECT 1 FROM public.members m WHERE m.id=member_id AND m.archived_at IS NULL) AND ($2::timestamptz IS NULL OR (created_at,id)<($2,$3::uuid)) ORDER BY created_at DESC,id DESC LIMIT $4",['%'+search.replace(/[\\%_]/g,'\\$&')+'%',after?.[0]||null,after?.[1]||null,limit+1]);
+   const items=result.rows.slice(0,limit);await audit(client,'read','guest_prayers');return {items,next_cursor:result.rows.length>limit?Buffer.from(JSON.stringify([items.at(-1).created_at,items.at(-1).id])).toString('base64url'):null};
   }
   const archived=url.searchParams.get('archived')==='true';
   let sql='';
@@ -43,8 +47,8 @@ export async function readCore(resource:Resource,url:URL){
    FROM public.prayers WHERE archived_at IS NULL AND title ILIKE $1`+paging;
   const result=await client.query(sql,values);const more=result.rows.length>limit,items=result.rows.slice(0,limit);
   if(resource==='care'){
-   const guestPrayers=await client.query('SELECT id,member_id,body,created_at FROM public.guest_prayers WHERE archived_at IS NULL AND EXISTS(SELECT 1 FROM public.members m WHERE m.id=member_id AND m.archived_at IS NULL) ORDER BY created_at DESC,id DESC LIMIT $1',[limit]);
-   await audit(client,'read','care');return {items,guest_prayers:guestPrayers.rows,next_cursor:more?Buffer.from(JSON.stringify([items.at(-1).created_at,items.at(-1).id])).toString('base64url'):null};
+   const guestPrayers=await client.query('SELECT id,member_id,body,created_at FROM public.guest_prayers WHERE archived_at IS NULL AND body ILIKE $1 AND EXISTS(SELECT 1 FROM public.members m WHERE m.id=member_id AND m.archived_at IS NULL) ORDER BY created_at DESC,id DESC LIMIT $2',[pattern,limit+1]);
+   const guestItems=guestPrayers.rows.slice(0,limit);await audit(client,'read','care');return {items,guest_prayers:guestItems,next_guest_cursor:guestPrayers.rows.length>limit?Buffer.from(JSON.stringify([guestItems.at(-1).created_at,guestItems.at(-1).id])).toString('base64url'):null,next_cursor:more?Buffer.from(JSON.stringify([items.at(-1).created_at,items.at(-1).id])).toString('base64url'):null};
   }
   if(resource==='members')await audit(client,'read','directory');
   return {items,next_cursor:more?Buffer.from(JSON.stringify([items.at(-1).created_at,items.at(-1).id])).toString('base64url'):null};

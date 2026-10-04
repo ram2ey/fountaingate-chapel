@@ -1,0 +1,7 @@
+{
+  "scope": "dashboard client reference manifest plus root chunks; conservative includes lazy references",
+  "files": 10,
+  "raw_bytes": 510910,
+  "gzip_bytes": 154017,
+  "budget_bytes": 524288
+}

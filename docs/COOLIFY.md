@@ -35,7 +35,7 @@ These are liveness/access smoke checks; real identity, database, SMS and file ch
 
 Require the repository's **Checks** workflow to succeed before deployment. Configure Coolify deployment gating appropriately: its automatic Git push deployment must not bypass CI. Initially deploy approved releases manually after checks, or connect an explicitly authorized CI deployment step later.
 
-Build the maintenance image with `docker build --target maintenance`. Supply migration credentials at runtime and run `node scripts/migrate.cjs` once. The migration folder now contains thirteen domain/identity/workflow migrations. `node scripts/db-check.cjs` uses the runtime role and rejects elevated/owner roles. Never execute the removed Supabase schema or migrate on every startup.
+Build the maintenance image with `docker build --target maintenance`. Supply migration credentials at runtime and run `node scripts/migrate.cjs` once. The migration folder now contains fourteen domain/identity/workflow migrations. `node scripts/db-check.cjs` uses the runtime role and rejects elevated/owner roles. Never execute the removed Supabase schema or migrate on every startup.
 
 Production release sequence: confirm backup/restore viability → apply compatible migrations once → deploy matching application/worker images → verify health and core workflows → enable relevant jobs. Keep the previous image/commit and additive schema compatibility for rollback. Destructive schema changes need a later reviewed migration.
 
@@ -62,3 +62,5 @@ Monitor external uptime, disk/resource pressure, TLS renewal, database availabil
 No Hetzner/Coolify resource was configured or deployed from this workspace. A Linux Docker engine is required to run the container checks; the committed CI job performs them on Ubuntu. A pending/unrun CI job is not a successful container check.
 
 Phase 2 role provisioning and staging verification: [PHASE-2-SETUP.md](PHASE-2-SETUP.md).
+
+Phase 8 release gates and replacement-host recovery: [PHASE-8-RELEASE.md](PHASE-8-RELEASE.md).

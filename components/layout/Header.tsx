@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { can, routeCapabilities } from '../../lib/auth/permissions';
 import { useChurch } from '../../lib/context/ChurchContext';
+import { AccessibleDialog } from '../common/AccessibleDialog';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -28,7 +29,8 @@ export const Header: React.FC = () => {
     { label: 'Pastoral Documents', href: '/documents', roles: ['admin', 'pastor'] },
     { label: 'Prayer Wall & Testimonies', href: '/prayer-wall', roles: ['admin', 'pastor', 'member'] },
     { label: 'Sermon & Media Hub', href: '/sermons', roles: ['admin', 'pastor', 'member'] },
-    { label: 'WhatsApp & SMS Broadcast', href: '/communications', roles: ['admin', 'pastor'] },
+    { label: 'SMS Broadcasts', href: '/communications', roles: ['admin', 'pastor'] },
+    { label: 'Operational status', href: '/operations', roles: ['admin', 'pastor'] },
     { label: 'Financial Ledger', href: '/financials', roles: ['admin'] },
     { label: 'Tablet Entrance Kiosk', href: '/kiosk', roles: ['admin', 'pastor'] },
     { label: 'Admin Management Panel', href: '/admin', roles: ['admin'] },
@@ -57,7 +59,7 @@ export const Header: React.FC = () => {
           {isLive && (
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold animate-pulse">
               <span className="w-2 h-2 rounded-full bg-rose-600 animate-live-pulse" />
-              <span className="uppercase text-[10px] hidden sm:inline">LIVE</span>
+              <span className="uppercase text-xs hidden sm:inline">LIVE</span>
             </div>
           )}
 
@@ -70,7 +72,7 @@ export const Header: React.FC = () => {
           </a>
 
           {/* User Display Badge (Fixed Role - Non-switchable) */}
-          <div className="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700 uppercase">
+          <div className="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-sm font-bold text-slate-700 uppercase">
             {currentRole}
           </div>
 
@@ -88,7 +90,7 @@ export const Header: React.FC = () => {
             <button
               onClick={handleLogout}
               disabled={signingOut}
-              className="hidden md:inline-flex px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold border border-rose-200 transition"
+              className="hidden md:inline-flex px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-sm font-bold border border-rose-200 transition"
             >
               Log Out
             </button>
@@ -104,6 +106,9 @@ export const Header: React.FC = () => {
           {/* Hamburger Menu Toggle Button (Mobile & Tablet ONLY - Hidden on Desktop) */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Open navigation"
+            aria-haspopup="dialog"
+            aria-expanded={mobileMenuOpen}
             className="md:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-base font-bold transition flex items-center justify-center border border-slate-200"
             title="Toggle Navigation Menu"
           >
@@ -114,23 +119,23 @@ export const Header: React.FC = () => {
 
       {/* Hamburger Navigation Drawer Modal (Mobile & Tablet ONLY - Hidden on Desktop) */}
       {mobileMenuOpen && (
-        <div className="md:hidden">
-          <div className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs" onClick={() => setMobileMenuOpen(false)} />
-          <div className="absolute right-3 top-14 z-50 w-72 rounded-3xl bg-white border border-slate-200 shadow-2xl p-4 space-y-3 animate-in fade-in zoom-in-95">
+        <AccessibleDialog title="Navigation" onClose={()=>setMobileMenuOpen(false)}>
+          <div className="space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 px-1">
               <div>
                 <p className="font-display font-extrabold text-sm text-slate-900">Fountain Gate Chapel</p>
-                <p className="text-[10px] text-amber-700 font-bold uppercase">{currentRole} Navigation</p>
+                <p className="text-xs text-amber-700 font-bold uppercase">{currentRole} Navigation</p>
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close navigation menu"
                 className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center"
               >
                 ✕
               </button>
             </div>
 
-            <nav className="space-y-1 max-h-[70vh] overflow-y-auto pr-1">
+            <nav aria-label="Mobile primary" className="space-y-1 max-h-[70vh] overflow-y-auto pr-1">
               {NAV_ITEMS.map((item) => {
                 const isAllowed = can(currentRole, routeCapabilities[item.href] || 'kiosk');
                 const isActive = pathname === item.href;
@@ -141,8 +146,9 @@ export const Header: React.FC = () => {
                   <Link
                     key={item.href}
                     href={item.href}
+                    aria-current={isActive?'page':undefined}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
+                    className={`flex items-center justify-between min-h-[44px] px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
                       isActive
                         ? 'bg-indigo-600 text-white font-bold shadow-md'
                         : 'text-slate-700 hover:bg-slate-100'
@@ -150,7 +156,7 @@ export const Header: React.FC = () => {
                   >
                     <span>{item.label}</span>
                     {item.badge !== undefined && (
-                      <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold animate-pulse">
+                      <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-xs font-bold animate-pulse">
                         {item.badge}
                       </span>
                     )}
@@ -160,11 +166,11 @@ export const Header: React.FC = () => {
             </nav>
 
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs px-1">
-              <span className="text-[11px] text-slate-500 truncate max-w-[150px]">{currentUser?.full_name || 'FGC Leader'}</span>
+              <span className="text-sm text-slate-500 truncate max-w-[150px]">{currentUser?.full_name || 'FGC Leader'}</span>
               {currentUser ? (
                 <button
                   onClick={handleLogout} disabled={signingOut}
-                  className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 font-bold text-[11px] border border-rose-200"
+                  className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 font-bold text-sm border border-rose-200"
                 >
                   Log Out
                 </button>
@@ -172,14 +178,14 @@ export const Header: React.FC = () => {
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-1 rounded-lg bg-indigo-600 text-white font-bold text-[11px]"
+                  className="px-3 py-1 rounded-lg bg-indigo-600 text-white font-bold text-sm"
                 >
                   Log In
                 </Link>
               )}
             </div>
           </div>
-        </div>
+        </AccessibleDialog>
       )}
     </header>
   );

@@ -56,6 +56,7 @@ test('transactions commit, roll back and discard a connection after failed rollb
     const exports = {};
     vm.runInNewContext(source, { exports, console, require: name => {
       if (name === 'server-only') return {};
+      if (name === './operational-log.cjs') return {logEvent(){}};
       if (name === 'pg') return { Pool: class { on() {} async connect() { return client; } } };
       if (name === './database-config.cjs') return { databaseConfig: () => ({}) };
       throw Error(name);

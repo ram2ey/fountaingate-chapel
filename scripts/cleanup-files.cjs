@@ -1,3 +1,4 @@
+const {logEvent}=require('../lib/server/operational-log.cjs');
 const fs=require('node:fs/promises');
 const path=require('node:path');
 const {Pool}=require('pg');
@@ -20,5 +21,5 @@ async function cleanup(pool,storage=localStorage(),directory=process.env.UPLOAD_
  return rows.length;
 }
 async function main(){const pool=new Pool(databaseConfig(process.env,'migration'));try{const role=(await pool.query('SELECT current_user AS name')).rows[0];if(role.name!=='fgc_owner')throw Error('Cleanup requires migration role');const result=await pool.query("SELECT pg_try_advisory_lock(731013) AS locked");if(!result.rows[0].locked)throw Error('Cleanup already running');console.log('Files reconciled:',await cleanup(pool));}finally{await pool.end();}}
-if(require.main===module)main().catch(()=>{console.error('File cleanup unavailable. Check storage and maintenance configuration.');process.exitCode=1;});
+if(require.main===module)main().catch(()=>{logEvent('file_cleanup_failed',{role:'maintenance'});process.exitCode=1;});
 module.exports={cleanup};

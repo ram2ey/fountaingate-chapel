@@ -34,12 +34,12 @@ test('audio controls use the authorized original and duration comes from browser
  const loaded=new Module('audio-player',module);loaded.require=name=>name==='react'?{useState:initial=>[initial,value=>calls.push(value)]}:require(name);
  loaded._compile(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText,'audio-player');
  const tree=loaded.exports.AudioLibraryPlayer({sermon:{id:'persisted-id',title:'Stored sermon',preacher:'Preacher',preached_on:'2026-10-04'}}),audio=tree.props.children.find(child=>child?.type==='audio');
- assert.equal(audio.props.src,'/api/media/persisted-id');assert.equal(audio.props.controls,true);assert.equal(audio.props.preload,'metadata');
+ assert.equal(audio.props.src,'/api/media/persisted-id');assert.equal(audio.props.controls,true);assert.equal(audio.props.preload,'none');
  audio.props.onLoadedMetadata({currentTarget:{duration:125.5}});assert.equal(calls[0],125.5);
  audio.props.onTimeUpdate({currentTarget:{currentTime:37.25}});assert.ok(calls.includes(37.25));audio.props.onError();assert.match(calls.at(-1),/unavailable or unsupported/);
 });
 test('upgrade imports existing document versions without changing storage keys or digests',async()=>{
- const {PGlite}=require('@electric-sql/pglite'),legacy=new PGlite(),read=require('node:fs');try{
+ const {PGlite}=require('@electric-sql/pglite'),legacy=new PGlite({extensions:{pg_trgm:require('@electric-sql/pglite/contrib/pg_trgm').pg_trgm}}),read=require('node:fs');try{
   await legacy.exec('CREATE ROLE fgc_runtime;CREATE ROLE fgc_auth;CREATE ROLE fgc_messaging;CREATE ROLE fgc_owner;');const name=(await legacy.query('SELECT current_database() AS name')).rows[0].name;
   await legacy.exec('GRANT CREATE ON DATABASE "'+name+'" TO fgc_owner;ALTER SCHEMA public OWNER TO fgc_owner;SET ROLE fgc_owner');
   for(const migration of read.readdirSync('db/migrations').filter(n=>n.endsWith('.sql')&&n<'0013').sort())await legacy.exec(read.readFileSync('db/migrations/'+migration,'utf8'));
@@ -48,7 +48,7 @@ test('upgrade imports existing document versions without changing storage keys o
   const user=(await legacy.query("INSERT INTO identity.users(phone,password_hash) VALUES('+233241234596','unusable-fixture') RETURNING id")).rows[0].id;
   const document=(await legacy.query("INSERT INTO public.documents(branch_id,owner_id,title) VALUES($1,$2,'Legacy original') RETURNING id",[branch,user])).rows[0].id;
   const key=randomUUID(),digest='a'.repeat(64);await legacy.query("INSERT INTO public.document_versions(branch_id,document_id,version,storage_key,media_type,byte_size,digest) VALUES($1,$2,2,$3,'application/pdf',123,$4)",[branch,document,key,digest]);
-  await legacy.exec('SET ROLE fgc_owner');await legacy.exec(read.readFileSync('db/migrations/0013_documents_media.sql','utf8'));await legacy.exec('RESET ROLE');
+  await legacy.exec('SET ROLE fgc_owner');await legacy.exec(read.readFileSync('db/migrations/0013_documents_media.sql','utf8'));await legacy.exec(read.readFileSync('db/migrations/0014_release_indexes.sql','utf8'));await legacy.exec('RESET ROLE');
   const actual=(await legacy.query('SELECT storage_key,digest,version,state,byte_size FROM public.stored_files WHERE document_id=$1',[document])).rows[0];assert.equal(actual.storage_key,key);assert.equal(actual.digest,digest);assert.equal(actual.version,2);assert.equal(actual.state,'ready');assert.equal(Number(actual.byte_size),123);
  }finally{await legacy.close();}
 });

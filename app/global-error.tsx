@@ -1,0 +1,2 @@
+'use client';
+export default function GlobalError({retry}:{error:Error&{digest?:string};retry:()=>void}){return <html lang="en"><body><main role="alert"><h1>Church portal temporarily unavailable</h1><p>Saved records are retained. Refresh before repeating an operation whose outcome is uncertain.</p><button onClick={retry}>Retry loading</button><a href="/login">Return to sign in</a></main></body></html>;}

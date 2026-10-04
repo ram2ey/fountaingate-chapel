@@ -1,6 +1,7 @@
 import 'server-only';
 import { Pool, type PoolClient, type QueryResultRow } from 'pg';
 import { databaseConfig } from './database-config.cjs';
+import { logEvent } from './operational-log.cjs';
 
 const databaseGlobal = globalThis as typeof globalThis & { fgcPool?: Pool };
 
@@ -8,7 +9,7 @@ function getPool(): Pool {
   if (!databaseGlobal.fgcPool) {
     const pool = new Pool(databaseConfig());
     // Avoid unhandled idle-connection errors; never log SQL, credentials or values.
-    pool.on('error', () => console.error('An idle database connection failed.'));
+    pool.on('error', () => logEvent('database_connection_failed',{role:'runtime'}));
     databaseGlobal.fgcPool = pool;
   }
   return databaseGlobal.fgcPool;

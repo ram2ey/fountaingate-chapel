@@ -1,7 +1,7 @@
 import 'server-only';
 import { uuid } from './auth-input';
 
-export class InputError extends Error {}
+export class InputError extends Error {constructor(message:string){super(message);this.name='InputError';}}
 export function text(value:unknown,name:string,max:number,required=true):string {
  if(typeof value!=='string'||value.trim().length>max||(required&&!value.trim()))throw new InputError(`Invalid ${name}.`);
  return value.trim();

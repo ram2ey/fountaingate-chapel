@@ -238,6 +238,8 @@ Implementation status: migration 0013, staged private-volume uploads, version hi
 
 Audit coverage: 24, 25; final verification of all findings.
 
+Implementation status (4 October 2026): local Phase 8 accessibility, pagination, performance measurements, operational status/logging, restore verification and CI checks are implemented. Native container CI and the external staging, screen-reader, provider and replacement-host recovery gates remain unverified. See `docs/PHASE-8-RELEASE.md` and `audit/phase-8-results.md`. Hubtel activation remains deferred.
+
 Tasks:
 
 1. Replace custom dialogs with accessible primitives supporting focus management, keyboard dismissal, scroll containment and focus restoration. Bind labels, name icon buttons and announce validation/success/error messages appropriately.

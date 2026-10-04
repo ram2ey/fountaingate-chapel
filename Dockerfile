@@ -13,6 +13,7 @@ FROM dependencies AS maintenance
 ENV NODE_ENV=production
 COPY lib/server/database-config.cjs ./lib/server/database-config.cjs
 COPY lib/server/file-storage.cjs ./lib/server/file-storage.cjs
+COPY lib/server/operational-log.cjs ./lib/server/operational-log.cjs
 COPY scripts ./scripts
 COPY db ./db
 USER node
@@ -32,6 +33,7 @@ FROM dependencies AS messaging-worker
 ENV NODE_ENV=production
 COPY scripts/messaging-worker.cjs ./scripts/messaging-worker.cjs
 COPY lib/server/database-config.cjs lib/server/messaging-provider.cjs ./lib/server/
+COPY lib/server/operational-log.cjs ./lib/server/operational-log.cjs
 USER node
 CMD ["node", "scripts/messaging-worker.cjs"]
 

@@ -13,15 +13,16 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   const isStandalone = STANDALONE_ROUTES.includes(pathname);
 
   if (isStandalone) {
-    return <main className="min-h-screen w-full bg-slate-50">{children}</main>;
+    return <><a className="skip-link" href="#main-content">Skip to main content</a><main id="main-content" tabIndex={-1} className="min-h-screen w-full bg-slate-50">{children}</main></>;
   }
 
   return (
     <div className="flex min-h-screen bg-slate-50">
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
         <Header />
-        <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main id="main-content" tabIndex={-1} className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

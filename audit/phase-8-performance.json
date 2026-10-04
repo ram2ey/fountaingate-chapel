@@ -1,0 +1,32 @@
+{
+  "engine": "PGlite PostgreSQL WASM; not Hetzner latency",
+  "role": "fgc_runtime",
+  "rows": {
+    "members": 10000,
+    "care": 5000,
+    "ledger": 10000
+  },
+  "queries": {
+    "directory": {
+      "execution_ms": 19.468,
+      "returned_rows": 11,
+      "indexes": []
+    },
+    "care": {
+      "execution_ms": 1.774,
+      "returned_rows": 26,
+      "indexes": [
+        "care_page_idx",
+        "members_id_branch_id_key"
+      ]
+    },
+    "ledger": {
+      "execution_ms": 1.078,
+      "returned_rows": 101,
+      "indexes": [
+        "ledger_scope_idx",
+        "members_profile_id_key"
+      ]
+    }
+  }
+}

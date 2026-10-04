@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit --incremental false",
-    "test": "node --test tests/phase-1-1.cjs tests/phase-1.cjs tests/phase-2.cjs tests/auth-integration.cjs tests/phase-4.cjs tests/phase-5.cjs tests/phase-6.cjs tests/phase-7.cjs",
+    "test": "node --test tests/phase-1-1.cjs tests/phase-1.cjs tests/phase-2.cjs tests/auth-integration.cjs tests/phase-4.cjs tests/phase-5.cjs tests/phase-6.cjs tests/phase-7.cjs tests/phase-8.cjs",
     "test:phase1.1": "node tests/phase-1-1.cjs",
     "db:migrate": "node scripts/migrate.cjs",
     "db:check": "node scripts/db-check.cjs",
@@ -17,7 +17,12 @@
     "attendance:reconcile": "node scripts/reconcile-attendance.cjs",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "test:phase2": "node --test tests/phase-2.cjs",
-    "auth:bootstrap-invite": "node scripts/bootstrap-invite.cjs"
+    "auth:bootstrap-invite": "node scripts/bootstrap-invite.cjs",
+    "test:browser": "playwright test",
+    "ops:check": "node scripts/ops-check.cjs",
+    "restore:verify": "node scripts/verify-restore.cjs",
+    "perf:queries": "node scripts/benchmark-release.cjs",
+    "perf:bundle": "node scripts/measure-bundle.cjs"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.1",
@@ -34,7 +39,9 @@
     "server-only": "0.0.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@electric-sql/pglite": "^0.5.8",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "^24.0.0",
     "@types/pg": "8.23.1",

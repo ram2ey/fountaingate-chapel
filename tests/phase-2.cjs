@@ -1,7 +1,7 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const {PGlite}=require('@electric-sql/pglite');const {createHash}=require('node:crypto');
 const digest=t=>createHash('sha256').update(t).digest('hex');
 test('clean PostgreSQL migrations and runtime RLS enforce branch, identity and confidentiality',async()=>{
- const db=new PGlite();try{
+ const db=new PGlite({extensions:{pg_trgm:require('@electric-sql/pglite/contrib/pg_trgm').pg_trgm}});try{
  await db.exec('CREATE ROLE fgc_runtime; CREATE ROLE fgc_auth; CREATE ROLE fgc_owner;CREATE ROLE fgc_messaging;');
  const dbname=(await db.query('SELECT current_database() AS name')).rows[0].name;
  await db.exec('GRANT CREATE ON DATABASE "'+dbname+'" TO fgc_owner;ALTER SCHEMA public OWNER TO fgc_owner;SET ROLE fgc_owner;');

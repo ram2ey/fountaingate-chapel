@@ -10,5 +10,5 @@ export const roleCapabilities: Record<UserRole, readonly Capability[]> = {
 export function can(role: UserRole, capability: Capability) { return roleCapabilities[role].includes(capability); }
 export const routeCapabilities: Record<string, Capability> = {
   '/': 'self', '/attendance':'attendance', '/members': 'directory', '/giving': 'self', '/pastoral-care': 'care', '/documents': 'documents',
-  '/prayer-wall': 'self', '/sermons': 'self', '/communications': 'care', '/financials': 'finance', '/admin': 'staff', '/settings': 'self',
+  '/prayer-wall': 'self', '/sermons': 'self', '/communications': 'care', '/operations':'care', '/financials': 'finance', '/admin': 'staff', '/settings': 'self',
 };
