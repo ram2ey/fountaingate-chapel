@@ -3,11 +3,13 @@ import AxeBuilder from '@axe-core/playwright';
 
 test('account forms have labels, accessible contrast and no mobile overflow',async({page})=>{
  await page.goto('/login');
- for(const mode of ['login','register','recovery','Resend verification']){
-  await page.getByRole('button',{name:mode,exact:true}).click();
+ for(const mode of ['login','Create account','Forgot password?','Resend verification']){
+  if(mode!=='login')await page.getByRole('button',{name:mode,exact:true}).click();
   const result=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
   expect(result.violations).toEqual([]);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+  if(mode==='login'&&process.env.LOGIN_PREVIEW_DIR)await page.screenshot({path:process.env.LOGIN_PREVIEW_DIR+'/login-'+(page.viewportSize()?.width||0)+'.png',fullPage:true});
+  if(mode!=='login')await page.getByRole('button',{name:'Back to sign in',exact:true}).click();
  }
 });
 test('keyboard reaches the form and invalid submission sends no message',async({page})=>{
@@ -16,9 +18,20 @@ test('keyboard reaches the form and invalid submission sends no message',async({
  await expect(page.getByLabel(/Authenticator/)).toHaveCount(0);
  let submissions=0;page.on('request',request=>{if(request.method()==='POST')submissions++;});
  await page.getByRole('button',{name:'Sign in',exact:true}).click();
- await expect(page.getByLabel('Phone (international format)')).toBeFocused();
+ await expect(page.getByLabel('Phone number')).toBeFocused();
  expect(submissions).toBe(0);
  await page.keyboard.press('Tab');await expect(page.getByLabel('Branch ID')).toBeFocused();
+});
+test('password visibility and login errors remain accessible',async({page})=>{
+ await page.goto('/login');
+ await page.getByLabel('Phone number').fill('+233241234567');
+ await page.getByLabel('Branch ID').fill('00000000-0000-4000-8000-000000000001');
+ const password=page.getByLabel('Password',{exact:true});await password.fill('a test password');
+ await page.getByRole('button',{name:'Show password',exact:true}).click();await expect(password).toHaveAttribute('type','text');
+ await page.getByRole('button',{name:'Hide password',exact:true}).click();await expect(password).toHaveAttribute('type','password');
+ await page.route('**/api/auth/login',route=>route.fulfill({status:401,contentType:'application/json',body:JSON.stringify({error:'Phone number or password is incorrect.'})}));
+ await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page.getByRole('region',{name:'Welcome back'}).getByRole('alert')).toContainText('Phone number or password is incorrect.');
+ await expect(page.getByRole('button',{name:'Sign in',exact:true})).toBeEnabled();
 });
 test('protected pages redirect and protected files deny anonymous requests',async({page,request})=>{
  await page.goto('/operations');await expect(page).toHaveURL(/\/login$/);
